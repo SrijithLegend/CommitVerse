@@ -6,7 +6,10 @@ const rule = (id: string) => ACHIEVEMENT_BY_ID.get(id)!.rule;
 describe('F11 achievement rules — boundaries', () => {
   it('catalogue ids are unique and rewards are within 10–500 ✦', () => {
     expect(new Set(ACHIEVEMENTS.map((a) => a.id)).size).toBe(ACHIEVEMENTS.length);
-    for (const a of ACHIEVEMENTS) expect(a.stardust).toBeGreaterThanOrEqual(10), expect(a.stardust).toBeLessThanOrEqual(500);
+    for (const a of ACHIEVEMENTS) {
+      expect(a.stardust).toBeGreaterThanOrEqual(10);
+      expect(a.stardust).toBeLessThanOrEqual(500);
+    }
   });
   it.each([
     ['main_sequence', { cTotal: 99 }, { cTotal: 100 }],

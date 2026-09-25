@@ -1,0 +1,16 @@
+app = "commitverse-worker"
+primary_region = "sin"
+
+[build]
+  dockerfile = "apps/worker/Dockerfile"
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "4gb"
+
+[checks.health]
+  type = "http"
+  port = 8080
+  path = "/healthz"
+  interval = "30s"
+  timeout = "5s"

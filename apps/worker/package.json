@@ -1,0 +1,21 @@
+{
+  "name": "@commitverse/worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "seed": "tsx src/cli.ts seed",
+    "bake": "tsx src/cli.ts bake",
+    "migrate": "tsx src/cli.ts migrate",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@commitverse/contracts": "workspace:*",
+    "@commitverse/db": "workspace:*",
+    "@commitverse/pipeline": "workspace:*",
+    "@sentry/node": "^11.0.0",
+    "tsx": "^4.23.15"
+  }
+}

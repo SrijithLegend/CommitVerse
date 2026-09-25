@@ -133,7 +133,9 @@ function encodeHist(records: Uint8Array[], years: number): Uint8Array {
   dv.setUint16(4, HIST_FIRST_YEAR, true);
   dv.setUint16(6, years, true);
   dv.setUint32(8, records.length, true);
-  records.forEach((r, i) => out.set(r, 12 + i * recLen));
+  records.forEach((r, i) => {
+    out.set(r, 12 + i * recLen);
+  });
   return out;
 }
 
