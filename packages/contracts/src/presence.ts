@@ -52,3 +52,24 @@ export function decodeSnapshot(buf: ArrayBuffer, half: number): { total: number;
   }
   return { total, ships };
 }
+
+/** Server side: one batched snapshot per client (only its nearest ships). */
+export function encodeSnapshot(total: number, ships: { id: number; raw: DataView; hull: number }[]): ArrayBuffer {
+  const b = new ArrayBuffer(5 + ships.length * SHIP_BYTES);
+  const v = new DataView(b);
+  v.setUint8(0, MSG.SNAPSHOT);
+  v.setUint16(1, Math.min(65535, total), true);
+  v.setUint16(3, ships.length, true);
+  ships.forEach((s, k) => {
+    const o = 5 + k * SHIP_BYTES;
+    v.setUint32(o, s.id, true);
+    // copy pos(6) + quat(8) + vel(6) straight from the client's STATE message (offsets 1..20)
+    for (let i = 0; i < 20; i++) v.setUint8(o + 4 + i, s.raw.getUint8(1 + i));
+    v.setUint8(o + 24, s.hull);
+    v.setUint8(o + 25, s.raw.getUint8(21));
+  });
+  return b;
+}
+
+/** Sector-local quantized position from a STATE message (for nearest-ship interest management). */
+export const statePos = (raw: DataView): [number, number, number] => [raw.getInt16(1, true), raw.getInt16(3, true), raw.getInt16(5, true)];

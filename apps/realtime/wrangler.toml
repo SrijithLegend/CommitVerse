@@ -1,0 +1,13 @@
+name = "commitverse-realtime"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+[[durable_objects.bindings]]
+name = "SECTORS"
+class_name = "Sector"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Sector"]
+
+# REALTIME_SHARED_SECRET is set with `wrangler secret put REALTIME_SHARED_SECRET`

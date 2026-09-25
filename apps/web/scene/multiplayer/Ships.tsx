@@ -13,7 +13,7 @@ import { useSettings } from '@/lib/client/settings';
 import { useUniverse } from '@/stores/universe';
 import { useEngine } from '../context';
 import { TIERS } from '../quality';
-import { decodeSnapshot, EMOTES, encodeState, MSG, type ShipState } from './protocol';
+import { decodeSnapshot, EMOTES, encodeState, MSG, type ShipState } from '@commitverse/contracts';
 
 const REALTIME = process.env.NEXT_PUBLIC_REALTIME_URL;
 const BUFFER_MS = 200;

@@ -278,3 +278,4 @@ export const ShopItem = z.object({
 });
 export type ShopItem = z.infer<typeof ShopItem>;
 export * from './items';
+export * from './presence';

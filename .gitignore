@@ -16,3 +16,4 @@ test-results/
 .wrangler/
 *.vsix
 public/detect-gpu/
+.dev.vars
