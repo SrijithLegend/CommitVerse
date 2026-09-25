@@ -187,12 +187,13 @@ export async function starDetail(db: Sql, githubId: number): Promise<StarDetail>
       `select o.login::text as login, o.name, o.avatar_url from org_members om join orgs o on o.github_org_id = om.org_id where om.github_id = $1 order by o.login limit 20`,
       [githubId],
     ),
-    db.query<{ signals: number; binary_with: string | null; gift_pods: number; remnant: Date | null }>(
+    db.query<{ signals: number; binary_with: string | null; gift_pods: number; remnant: Date | null; banner: string | null }>(
       `select (select count(*)::int from signals where to_id = $1) as signals,
          (select g.login::text from bindings b join github_users g on g.github_id = case when b.a_id = $1 then b.b_id else b.a_id end
             where b.status = 'active' and (b.a_id = $1 or b.b_id = $1) limit 1) as binary_with,
          (select count(*)::int from gifts where to_id = $1 and state in ('pending','delivered')) as gift_pods,
-         (select max(created_at) from events where actor_id = $1 and type = 'supernova' and created_at > now() - interval '7 days') as remnant`,
+         (select max(created_at) from events where actor_id = $1 and type = 'supernova' and created_at > now() - interval '7 days') as remnant,
+         (select text from banners where github_id = $1 and status = 'approved') as banner`,
       [githubId],
     ),
     db.query<{ bake_version: string; rank_galaxy: number | null; pct_galaxy: number | null }>(
@@ -284,6 +285,7 @@ export async function starDetail(db: Sql, githubId: number): Promise<StarDetail>
       giftPods: s.gift_pods,
       remnantUntil,
       beaconActive: r.beacon_active,
+      bannerText: s.banner,
     },
     why,
     rankHistory: history.reverse().map((h) => ({ bakeVersion: h.bake_version, rankGalaxy: h.rank_galaxy, pctGalaxy: h.pct_galaxy })),
@@ -304,8 +306,11 @@ export async function briefs(db: Sql, ids: number[]): Promise<StarBrief[]> {
     temperature: number;
     luminosity: number;
     language: string;
+    x: number;
+    y: number;
+    z: number;
   }>(
-    `select b.github_id, u.login::text as login, u.name, u.avatar_url, b.spectral_class, b.state, b.radius, b.temperature, b.luminosity, g.language
+    `select b.github_id, u.login::text as login, u.name, u.avatar_url, b.spectral_class, b.state, b.radius, b.temperature, b.luminosity, g.language, b.x, b.y, b.z
      from bodies b join github_users u using (github_id) join galaxies g on g.id = b.galaxy_id
      where b.github_id = any($1::bigint[]) and not u.is_opted_out`,
     [ids],
@@ -321,6 +326,7 @@ export async function briefs(db: Sql, ids: number[]): Promise<StarBrief[]> {
     temperature: r.temperature,
     luminosity: r.luminosity,
     galaxy: r.language,
+    position: [r.x, r.y, r.z] as [number, number, number],
   }));
 }
 

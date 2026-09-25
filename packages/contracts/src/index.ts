@@ -134,6 +134,7 @@ export const StarDetail = z.object({
     giftPods: z.number(),
     remnantUntil: z.string().nullable(),
     beaconActive: z.boolean(),
+    bannerText: z.string().nullable(),
   }),
   why: z.array(WhyLine),
   rankHistory: z.array(z.object({ bakeVersion: z.string(), rankGalaxy: z.number().nullable(), pctGalaxy: z.number().nullable() })),
@@ -153,6 +154,7 @@ export const StarBrief = z.object({
   temperature: z.number(),
   luminosity: z.number(),
   galaxy: z.string(),
+  position: z.tuple([z.number(), z.number(), z.number()]),
 });
 export type StarBrief = z.infer<typeof StarBrief>;
 export const BriefQuery = z.object({

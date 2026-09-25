@@ -86,3 +86,14 @@ describe('§6.4 octree', () => {
     expect(pathFor({ x: -1, y: -1, z: -1 }, [0, 0, 0, 10], 1)).toBe('r0');
   });
 });
+
+import { minimumSpanningTree } from '../src';
+describe('§3.5 constellation MST', () => {
+  it('connects n points with n−1 shortest edges', () => {
+    const pts: [number, number, number][] = [[0, 0, 0], [10, 0, 0], [0, 10, 0], [100, 100, 0], [11, 0, 0]];
+    const e = minimumSpanningTree(pts);
+    expect(e).toHaveLength(4);
+    const len = e.reduce((s, [a, b]) => s + Math.hypot(pts[a]![0] - pts[b]![0], pts[a]![1] - pts[b]![1]), 0);
+    expect(len).toBeCloseTo(10 + 10 + 1 + Math.hypot(89, 100), 6);
+  });
+});

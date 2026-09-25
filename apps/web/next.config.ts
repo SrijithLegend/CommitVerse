@@ -10,6 +10,8 @@ const config: NextConfig = {
     '@commitverse/embed',
     '@commitverse/db',
     '@commitverse/pipeline',
+    '@commitverse/shaders',
+    '@commitverse/ui-kit',
   ],
   serverExternalPackages: ['@electric-sql/pglite', 'pg-boss', 'pino', 'postgres'],
   images: { remotePatterns: [{ protocol: 'https', hostname: 'avatars.githubusercontent.com' }] },
