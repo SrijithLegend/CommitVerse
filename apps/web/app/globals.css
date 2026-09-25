@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* §5.2 design tokens — "Observatory Instrument": the UI is monochrome; colour comes only from the data. */
+:root {
+  --space-0: #03040a;
+  --space-1: #070a14;
+  --panel: rgba(10, 14, 26, 0.72);
+  --panel-solid: #0a0e1a;
+  --panel-border: rgba(160, 190, 255, 0.1);
+  --ink-1: #e8ecf6;
+  --ink-2: #9aa4bd;
+  --ink-3: #5b6480;
+  --accent: #7cc4ff;
+  --warn: #ffb86b;
+  --danger: #ff6b81;
+  --radius: 10px;
+  --hairline: 1px solid var(--panel-border);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-space-0: var(--space-0);
+  --color-space-1: var(--space-1);
+  --color-panel: var(--panel);
+  --color-panel-solid: var(--panel-solid);
+  --color-line: var(--panel-border);
+  --color-ink-1: var(--ink-1);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --radius-panel: var(--radius);
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ease-ui: var(--ease);
+}
+
+html,
+body {
+  background: var(--space-0);
+  color: var(--ink-1);
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Tabular numerals everywhere numbers change */
+.num,
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+.glass {
+  background: var(--panel);
+  border: var(--hairline);
+  border-radius: var(--radius);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+.hairline {
+  border: var(--hairline);
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(124, 196, 255, 0.28);
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-3) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 12px;
+  top: 12px;
+  z-index: 100;
+  padding: 8px 12px;
+  background: var(--panel-solid);
+  border: var(--hairline);
+  border-radius: var(--radius);
+}
+
+.prose-cv h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+.prose-cv h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 2rem 0 0.5rem;
+}
+.prose-cv p,
+.prose-cv li {
+  color: var(--ink-2);
+  line-height: 1.65;
+  margin: 0.5rem 0;
+}
+.prose-cv ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-cv a {
+  color: var(--accent);
+}
+.prose-cv code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--ink-1);
+}
+.prose-cv table {
+  width: 100%;
+  font-size: 0.85rem;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+.prose-cv td,
+.prose-cv th {
+  border-bottom: var(--hairline);
+  padding: 6px 8px;
+  text-align: left;
+  color: var(--ink-2);
+}

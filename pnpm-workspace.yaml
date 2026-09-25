@@ -2,8 +2,9 @@ packages:
   - apps/*
   - packages/*
 allowBuilds:
-  esbuild: set this to true or false
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
-  - "@biomejs/biome"
+  esbuild: true
+  sharp: true
+  "@biomejs/biome": true
+  "@tailwindcss/oxide": true
+  "@sentry/cli": true
+  core-js: false
