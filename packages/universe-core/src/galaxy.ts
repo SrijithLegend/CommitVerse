@@ -247,12 +247,30 @@ export class SeparationHash {
 
 /** placeStar + min-separation: re-jitter up to 8 times using the next RNG draws, then accept anyway. */
 export function placeStarSeparated(p: number, userId: number, g: GalaxyDef, grid: SeparationHash): Vec3 {
+  return placeStarSeparatedDetailed(p, userId, g, grid).pos;
+}
+
+/** Same as placeStarSeparated, also returning how many re-jitters were used (for bake validation replay). */
+export function placeStarSeparatedDetailed(p: number, userId: number, g: GalaxyDef, grid: SeparationHash): { pos: Vec3; attempts: number } {
   const rng = mulberry32(hash32(userId) ^ g.seed);
   const s = sampleLocal(p, rng, g);
   let world = galaxyToWorld(g, s.pos);
-  for (let i = 0; i < 8 && grid.tooClose(world); i++) world = galaxyToWorld(g, s.rejitter());
+  let attempts = 0;
+  while (attempts < 8 && grid.tooClose(world)) {
+    world = galaxyToWorld(g, s.rejitter());
+    attempts++;
+  }
   grid.insert(world);
-  return world;
+  return { pos: world, attempts };
+}
+
+/** Deterministic replay of a separated placement given its recorded re-jitter count. */
+export function replayPlacement(p: number, userId: number, g: GalaxyDef, attempts: number): Vec3 {
+  const rng = mulberry32(hash32(userId) ^ g.seed);
+  const s = sampleLocal(p, rng, g);
+  let local = s.pos;
+  for (let i = 0; i < attempts; i++) local = s.rejitter();
+  return galaxyToWorld(g, local);
 }
 
 // ─── Provisional placement (§3.6) ─────────────────────────────────────────

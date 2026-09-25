@@ -1,0 +1,22 @@
+{
+  "name": "@commitverse/pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@commitverse/achievements": "workspace:*",
+    "@commitverse/contracts": "workspace:*",
+    "@commitverse/db": "workspace:*",
+    "@commitverse/universe-core": "workspace:*",
+    "aws4fetch": "^1.0.20",
+    "pg-boss": "^12.34.0",
+    "pino": "^10.3.1"
+  }
+}

@@ -275,3 +275,4 @@ export const ShopItem = z.object({
   ownedPct: z.number(),
 });
 export type ShopItem = z.infer<typeof ShopItem>;
+export * from './items';
