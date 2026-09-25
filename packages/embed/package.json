@@ -1,0 +1,16 @@
+{
+  "name": "@commitverse/embed",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@commitverse/universe-core": "workspace:*"
+  }
+}
