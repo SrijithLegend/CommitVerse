@@ -9,3 +9,4 @@ allowBuilds:
   "@sentry/cli": true
   core-js: false
   workerd: set this to true or false
+  '@vscode/vsce-sign': set this to true or false

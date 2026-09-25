@@ -88,7 +88,7 @@ export async function claimStar(db: Db, queue: JobQueue, c: ClaimInput): Promise
 
   const inserted = await db.query(
     `insert into accounts (auth_user_id, github_id, referral_code) values ($1, $2, $3)
-     on conflict (auth_user_id) do nothing returning github_id`,
+     on conflict do nothing returning github_id`,
     [c.authUserId, c.githubId, nanoid(8)],
   );
   const firstClaim = inserted.length > 0;

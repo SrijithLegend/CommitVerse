@@ -1,0 +1,65 @@
+{
+  "name": "commitverse-beacon",
+  "displayName": "Commitverse Beacon",
+  "description": "Your Commitverse star pulses cyan while you code. Sends only the language you're editing — never files, paths, repos or code.",
+  "version": "1.0.0",
+  "publisher": "commitverse",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "commitverse.signIn",
+        "title": "Commitverse: Connect Beacon"
+      },
+      {
+        "command": "commitverse.signOut",
+        "title": "Commitverse: Disconnect Beacon"
+      },
+      {
+        "command": "commitverse.openStar",
+        "title": "Commitverse: Open my star"
+      },
+      {
+        "command": "commitverse.togglePrivacy",
+        "title": "Commitverse: Pause/resume Beacon"
+      }
+    ],
+    "configuration": {
+      "title": "Commitverse Beacon",
+      "properties": {
+        "commitverse.baseUrl": {
+          "type": "string",
+          "default": "https://commitverse.dev",
+          "description": "Commitverse server."
+        },
+        "commitverse.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Send heartbeats (language only) while you code."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --platform=node --format=cjs --external:vscode --outfile=dist/extension.js --minify",
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.138.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2"
+  }
+}
