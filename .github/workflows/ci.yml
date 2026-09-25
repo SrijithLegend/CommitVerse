@@ -1,0 +1,31 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+        env:
+          SKIP_ENV_VALIDATION: '1'
+      - name: Secret-in-bundle grep (§11.1)
+        run: |
+          if grep -rE "SERVICE_ROLE|service_role|sk_live_|sk_test_|TOKEN_ENC_KEY" apps/web/.next/static; then
+            echo "::error::Server secret referenced in a client bundle"; exit 1; fi
+      - name: Bundle size check (§12)
+        run: node scripts/check-bundle-size.mjs
+      - run: pnpm audit --prod --audit-level high
+        continue-on-error: true

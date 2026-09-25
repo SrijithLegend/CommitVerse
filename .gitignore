@@ -1,1 +1,17 @@
 *COMMITVERSE_SPEC.md
+node_modules/
+.next/
+dist/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.data/
+apps/web/public/u/
+playwright-report/
+test-results/
+.wrangler/
+*.vsix
