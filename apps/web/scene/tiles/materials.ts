@@ -47,7 +47,7 @@ export function createShared(): SharedPointUniforms {
     uLut: { value: createLut() },
     uHidden: { value: createHiddenTexture() },
     uHiddenRows: { value: 0 },
-    uScale: { value: 3000 },
+    uScale: { value: 14000 },
     uPixelRatio: { value: 1 },
     uNearFade: { value: 300 },
     uCoronaColors: { value: coronaPalette() },

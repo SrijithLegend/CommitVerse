@@ -7,7 +7,7 @@ import type { Db } from '@commitverse/db';
 import { restGet } from './github';
 import { log } from './log';
 import { broadcast } from './realtime';
-import { emitEvent } from './social';
+import { emitEvent, killed } from './social';
 
 export type CometType = 'push' | 'pr_merged' | 'release';
 
@@ -30,6 +30,7 @@ async function meteorShowerActive(db: Db): Promise<boolean> {
 }
 
 export async function fireComet(db: Db, c: Omit<Comet, 'meteor'>): Promise<boolean> {
+  if (await killed(db, 'comets')) return false;
   const now = Date.now();
   if (now - (lastComet.get(c.githubId) ?? 0) < 30_000) return false;
   lastComet.set(c.githubId, now);

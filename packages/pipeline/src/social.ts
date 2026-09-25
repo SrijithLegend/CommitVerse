@@ -63,3 +63,15 @@ export async function grantStardust(db: Sql, githubId: number, delta: number, re
   );
   return rows.length > 0;
 }
+
+const flagCache = new Map<string, { at: number; on: boolean }>();
+/** §13.3 kill switches (`kill.comets`, `kill.multiplayer`, `kill.shop`, `kill.materialize`), cached for 15 s. */
+export async function killed(db: Sql, feature: string): Promise<boolean> {
+  const key = `kill.${feature}`;
+  const c = flagCache.get(key);
+  if (c && Date.now() - c.at < 15_000) return c.on;
+  const [r] = await db.query<{ enabled: boolean }>('select enabled from feature_flags where key = $1', [key]);
+  const on = !!r?.enabled;
+  flagCache.set(key, { at: Date.now(), on });
+  return on;
+}

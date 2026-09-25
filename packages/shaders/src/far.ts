@@ -63,7 +63,8 @@ void main() {
   gl_PointSize = size * uPixelRatio * vCanvas * near * uFade * visible;
   vec3 c = blackbodyQ(aProps.y);
   if (state == 1.0) c = mix(c, vec3(1.0, 0.37, 0.70), 0.45);
-  vColor = c * Leff * 1.8;
+  // energy conservation: big sprites (close stars) spread their light instead of blooming into a disc
+  vColor = c * Leff * 1.6 * mix(1.0, 0.35, smoothstep(10.0, 48.0, size));
   int ci = int(aCosmetic + 0.5);
   vTint = vec3(0.0);
   for (int k = 0; k < 16; k++) if (k == ci - 1) vTint = uCoronaColors[k];

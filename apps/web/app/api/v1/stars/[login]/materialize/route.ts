@@ -3,7 +3,7 @@
  * Abuse guard (§11.5): 5/min + 50/day per IP, Turnstile after 3 per session, global budget guard in the worker.
  */
 import { Login } from '@commitverse/contracts';
-import { budgetFraction, hasGitHubCredentials } from '@commitverse/pipeline';
+import { budgetFraction, hasGitHubCredentials, killed } from '@commitverse/pipeline';
 import { cookies } from 'next/headers';
 import { json, route } from '@/lib/server/api';
 import { db, queue } from '@/lib/server/app';
@@ -36,6 +36,7 @@ export const POST = route<{ login: string }>(
       const [b] = await d.query('select 1 from bodies where github_id = $1', [existing.githubId]);
       if (b) return json({ jobId: null, status: 'mapped', login: existing.login });
     }
+    if (await killed(d, 'materialize')) throw new ApiError(503, 'disabled', 'Forming new stars is paused right now');
     if (!hasGitHubCredentials()) {
       throw new ApiError(503, 'github_unavailable', 'Live materialization needs GitHub credentials on this deployment');
     }

@@ -108,7 +108,8 @@ export class Engine {
     this.shared.uPixelRatio.value = dpr;
     this.post.setTier(tier, useSettings.getState().bloom);
     this.adaptive.setBudget(tier === 'low' ? 1000 / 30 : 1000 / 60);
-    useUniverse.getState().set({ tier });
+    // store updates are deferred: applyTier also runs inside the constructor (during React render)
+    queueMicrotask(() => useUniverse.getState().set({ tier }));
   }
 
   /** Fine-grained ladder: DPR first, then bloom, then points. */

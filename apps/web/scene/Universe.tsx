@@ -22,6 +22,7 @@ import { Galaxies } from './far/Galaxies';
 import { Labels } from './far/Labels';
 import { Ships } from './multiplayer/Ships';
 import { Comets } from './near/Comets';
+import { CompareStage } from './near/CompareStage';
 import { Neighbors } from './near/Neighbors';
 import { Signals } from './near/Signals';
 import { SupernovaFx } from './near/Supernova';
@@ -69,6 +70,7 @@ function Root({ tilesBase }: { tilesBase: string }) {
 
   useEffect(() => {
     engineRef.current = engine;
+    if (process.env.NODE_ENV !== 'production') (window as unknown as { __cv?: Engine }).__cv = engine;
     return () => {
       engineRef.current = null;
       engine.dispose();
@@ -188,6 +190,7 @@ function Root({ tilesBase }: { tilesBase: string }) {
         <>
           <FocusedSystemGate />
           <Neighbors />
+          <CompareStage />
           <Ships />
         </>,
         engine.near,
@@ -206,13 +209,13 @@ function FocusedSystemGate() {
 function IntentDriver({ engine }: { engine: Engine }) {
   const intent = useUniverse((s) => s.intent);
   const manifest = useUniverse((s) => s.manifest);
-  const applied = useRef<string>('');
+  const applied = useRef<{ engine: Engine | null; key: string }>({ engine: null, key: '' });
   useEffect(() => {
     if (!manifest) return;
     const key = JSON.stringify(intent);
-    if (applied.current === key) return;
-    const first = applied.current === '';
-    applied.current = key;
+    if (applied.current.engine === engine && applied.current.key === key) return;
+    const first = applied.current.engine !== engine;
+    applied.current = { engine, key };
     const s = useUniverse.getState();
     switch (intent.type) {
       case 'hero': {
@@ -262,9 +265,23 @@ function IntentDriver({ engine }: { engine: Engine }) {
         }
         break;
       }
-      case 'view':
+      case 'view': {
+        // exact shot: pose first, then (optionally) the focused star's panel without moving the camera
         sceneCommands.push({ type: 'setPose', pos: intent.camera.pos, quat: intent.camera.quat });
+        const login = intent.camera.focus;
+        if (login)
+          void Promise.all([Api.position(login), Api.star(login)])
+            .then(([p, d]) => {
+              useUniverse.getState().set({
+                focus: { kind: 'star', githubId: p.githubId, login: d.user.login, position: [p.x, p.y, p.z], radius: d.body.radius, temperature: d.body.temperature },
+                focusDetail: d,
+                panel: 'system',
+              });
+              engine.rig.orbitAround([p.x, p.y, p.z], d.body.radius, { kind: 'star' });
+            })
+            .catch(() => {});
         break;
+      }
       case 'compare':
       case 'replay':
       case 'dim':
@@ -282,6 +299,12 @@ export default function Universe({ tilesBase }: { tilesBase: string }) {
     const c = document.createElement('canvas');
     const ok = !!c.getContext('webgl2');
     if (!ok) useUniverse.getState().set({ webgl: 'unavailable' });
+    // R3F measures its container once; when mounted lazily that first measurement can be missed — nudge it.
+    const ids = [requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))), window.setTimeout(() => window.dispatchEvent(new Event('resize')), 300)];
+    return () => {
+      cancelAnimationFrame(ids[0]!);
+      clearTimeout(ids[1]);
+    };
   }, []);
   if (listMode || webgl === 'unavailable') return null;
   return (

@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const tilesBase = process.env.NEXT_PUBLIC_TILES_BASE_URL?.replace(/\/$/, '') ?? '';
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
-      <body className="min-h-dvh overflow-x-hidden antialiased" data-nonce={nonce ? 'set' : 'none'}>
+      <body suppressHydrationWarning className="min-h-dvh overflow-x-hidden antialiased" data-nonce={nonce ? 'set' : 'none'}>
         <a href="#main" className="skip-link">
           Skip to content
         </a>

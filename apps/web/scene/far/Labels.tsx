@@ -70,9 +70,9 @@ export function Labels() {
     for (const g of manifest.galaxies) {
       const t = new Text();
       t.font = MONO;
-      t.text = g.language.toUpperCase().split('').join(' ');
+      t.text = g.language.toUpperCase();
       t.fontSize = 1;
-      t.letterSpacing = 0.12;
+      t.letterSpacing = 0.35;
       t.color = 0x9aa4bd;
       t.anchorX = 'center';
       t.anchorY = 'middle';
@@ -162,11 +162,11 @@ export function Labels() {
       const y = g.world[1] - cam[1]!;
       const z = g.world[2] - cam[2]!;
       const dist = Math.hypot(x, y, z);
-      const vis = THREE.MathUtils.smoothstep(dist / g.radius, 1.2, 2.2);
+      const vis = THREE.MathUtils.smoothstep(dist / g.radius, 2.2, 3.4);
       g.text.visible = vis > 0.01;
       g.text.position.set(x, y, z);
       g.text.quaternion.copy(q);
-      g.text.scale.setScalar(dist * pxScale * 13);
+      g.text.scale.setScalar(dist * pxScale * 10);
       g.text.fillOpacity = vis * 0.9;
     }
   });

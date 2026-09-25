@@ -40,7 +40,7 @@ export async function galaxyOverview(db: Sql, lang: string) {
     [g.id],
   );
   const top = await leaderboard(db, `galaxy:${g.id}`, 'impact', 0);
-  return { galaxy: g, stats, classes: Object.fromEntries(classes.map((c) => [c.cls, c.n])), top: top.rows };
+  return { galaxy: g, stats: stats ?? {}, classes: Object.fromEntries(classes.map((c) => [c.cls, c.n])), top: top.rows };
 }
 
 const METRIC_SQL: Record<Exclude<LeaderboardMetric, 'rising' | 'signals'>, string> = {
@@ -212,7 +212,7 @@ export async function census(db: Sql) {
   return {
     bakeVersion: u?.bakeVersion ?? null,
     bakedAt: u?.createdAt ?? null,
-    totals,
+    totals: totals ?? {},
     classes,
     states,
     galaxies,
