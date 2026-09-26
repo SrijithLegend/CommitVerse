@@ -3,9 +3,9 @@ import { CHUNKS } from './chunks';
 
 export { CHUNKS } from './chunks';
 export * from './far';
+export * from './fx';
 export * from './near';
 export * from './planet';
-export * from './fx';
 export * from './post';
 
 /** Resolves our #include chunks; unknown includes are left for three.js to resolve (e.g. <logdepthbuf_vertex>). */

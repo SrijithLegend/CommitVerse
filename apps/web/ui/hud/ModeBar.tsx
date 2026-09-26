@@ -1,6 +1,6 @@
 'use client';
 /** Bottom-left instrument strip: mode, LOD tier, quick actions; mobile flight controls (joystick visual + boost). */
-import { Tip } from '@commitverse/ui-kit';
+import { Tip } from '@commitverse/ui-kit/radix';
 import { Compass, HelpCircle, Home, Layers, Map as MapIcon, Orbit, Rocket, Share2, Telescope } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { engineRef } from '@/lib/client/engine-ref';
@@ -17,7 +17,19 @@ const MODE_LABEL: Record<string, string> = {
   replay: 'REPLAY',
 };
 
-function Btn({ label, kbd, onClick, active, children }: { label: string; kbd?: string; onClick: () => void; active?: boolean; children: React.ReactNode }) {
+function Btn({
+  label,
+  kbd,
+  onClick,
+  active,
+  children,
+}: {
+  label: string;
+  kbd?: string;
+  onClick: () => void;
+  active?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Tip content={kbd ? `${label} (${kbd})` : label}>
       <button
@@ -48,7 +60,9 @@ export function ModeBar() {
       const e = engineRef.current;
       if (!e) return;
       const p = e.rig.pos;
-      setCoords(`${Math.round(p[0]!).toLocaleString('en-US')}, ${Math.round(p[1]!).toLocaleString('en-US')}, ${Math.round(p[2]!).toLocaleString('en-US')}`);
+      setCoords(
+        `${Math.round(p[0]!).toLocaleString('en-US')}, ${Math.round(p[1]!).toLocaleString('en-US')}, ${Math.round(p[2]!).toLocaleString('en-US')}`,
+      );
     }, 500);
     return () => clearInterval(t);
   }, []);
@@ -78,7 +92,12 @@ export function ModeBar() {
           <Btn label="Star chart" kbd="M" onClick={() => action('chart')}>
             <MapIcon size={16} />
           </Btn>
-          <Btn label="Constellations" kbd="C" active={constellations} onClick={() => useSettings.getState().set({ constellations: !constellations })}>
+          <Btn
+            label="Constellations"
+            kbd="C"
+            active={constellations}
+            onClick={() => useSettings.getState().set({ constellations: !constellations })}
+          >
             <Layers size={16} />
           </Btn>
           <Btn label="Share this view" kbd="P" onClick={() => action('share')}>
@@ -105,7 +124,10 @@ export function ModeBar() {
 function TouchFlight() {
   return (
     <>
-      <div aria-hidden className="pointer-events-none fixed bottom-24 left-8 z-20 h-28 w-28 rounded-full border border-[rgba(160,190,255,0.2)] bg-[rgba(10,14,26,0.25)]">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed bottom-24 left-8 z-20 h-28 w-28 rounded-full border border-[rgba(160,190,255,0.2)] bg-[rgba(10,14,26,0.25)]"
+      >
         <div className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(124,196,255,0.25)]" />
       </div>
       <button
@@ -128,7 +150,10 @@ function GalaxyViewBridge() {
       const eng = engineRef.current;
       const s = useUniverse.getState();
       if (!eng) return;
-      const pos = s.focus?.kind === 'star' ? s.focus.position : ([eng.rig.target[0]!, eng.rig.target[1]!, eng.rig.target[2]!] as [number, number, number]);
+      const pos =
+        s.focus?.kind === 'star'
+          ? s.focus.position
+          : ([eng.rig.target[0]!, eng.rig.target[1]!, eng.rig.target[2]!] as [number, number, number]);
       const g = eng.tiles.galaxyAt(pos) ?? s.manifest?.galaxies[0];
       if (g) sceneCommands.push({ type: 'galaxyView', galaxyId: g.id });
     };

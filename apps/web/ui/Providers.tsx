@@ -1,16 +1,19 @@
 'use client';
-import { TooltipProvider } from '@commitverse/ui-kit';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Api, type Me } from '@/lib/client/api';
 import { unlockAudio } from '@/lib/client/audio';
 import { subscribe } from '@/lib/client/realtime';
+import { useSettings } from '@/lib/client/settings';
 import { initTelemetry } from '@/lib/client/telemetry';
-import { toast, Toaster } from './Toaster';
+import { Toaster, toast } from './Toaster';
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [client] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } } }));
+  const [client] = useState(
+    () => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false } } }),
+  );
   useEffect(() => {
+    void useSettings.persist.rehydrate();
     void initTelemetry();
     const unlock = () => unlockAudio();
     window.addEventListener('pointerdown', unlock, { once: true });
@@ -22,11 +25,9 @@ export function Providers({ children }: { children: ReactNode }) {
   }, []);
   return (
     <QueryClientProvider client={client}>
-      <TooltipProvider delayDuration={250}>
-        <UserChannel />
-        {children}
-        <Toaster />
-      </TooltipProvider>
+      <UserChannel />
+      {children}
+      <Toaster />
     </QueryClientProvider>
   );
 }

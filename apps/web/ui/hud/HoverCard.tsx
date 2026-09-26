@@ -16,7 +16,13 @@ export function HoverCard() {
       <div className="flex items-center gap-2.5">
         {b.avatarUrl && (
           // biome-ignore lint/performance/noImgElement: tiny avatar
-          <img src={`${b.avatarUrl}${b.avatarUrl.includes('?') ? '&' : '?'}s=64`} alt="" width={32} height={32} className="h-8 w-8 rounded-lg" />
+          <img
+            src={`${b.avatarUrl}${b.avatarUrl.includes('?') ? '&' : '?'}s=64`}
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-lg"
+          />
         )}
         <div className="min-w-0">
           <div className="truncate text-sm text-[var(--ink-1)]">{b.name ?? b.login}</div>

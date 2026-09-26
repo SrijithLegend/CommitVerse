@@ -23,7 +23,14 @@ function Neighbor({ star }: { star: NearStar }) {
   }, 0);
   return (
     <group ref={ref}>
-      <StarBody githubId={star.githubId} radius={star.radius} temperature={star.temperature} state={star.state} pulsarPeriod={star.flags & 2 ? 1.2 : null} detail="low" />
+      <StarBody
+        githubId={star.githubId}
+        radius={star.radius}
+        temperature={star.temperature}
+        state={star.state}
+        pulsarPeriod={star.flags & 2 ? 1.2 : null}
+        detail="low"
+      />
     </group>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 /** F13 leaderboard: pages of 50, "jump to me", each row with a mini star sprite in its real colour. */
 import type { LeaderboardRow } from '@commitverse/contracts';
-import { Button, compact, fmt, StarDot, Tabs } from '@commitverse/ui-kit';
+import { Button, compact, fmt, StarDot } from '@commitverse/ui-kit';
+import { Tabs } from '@commitverse/ui-kit/radix';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -19,9 +20,23 @@ export const METRICS = [
 ];
 
 const format = (metric: string, v: number) =>
-  metric === 'impact' ? fmt(v, 2) : metric === 'rising' ? `${v > 0 ? '+' : ''}${fmt(v, 1)} pts` : metric === 'streak' ? `${fmt(v)} d` : compact(v);
+  metric === 'impact'
+    ? fmt(v, 2)
+    : metric === 'rising'
+      ? `${v > 0 ? '+' : ''}${fmt(v, 1)} pts`
+      : metric === 'streak'
+        ? `${fmt(v)} d`
+        : compact(v);
 
-export function LeaderboardTable({ scope, initialMetric = 'impact', initial }: { scope: string; initialMetric?: string; initial?: { rows: LeaderboardRow[]; nextCursor: number | null; total: number } }) {
+export function LeaderboardTable({
+  scope,
+  initialMetric = 'impact',
+  initial,
+}: {
+  scope: string;
+  initialMetric?: string;
+  initial?: { rows: LeaderboardRow[]; nextCursor: number | null; total: number };
+}) {
   const [metric, setMetric] = useState(initialMetric);
   const [cursor, setCursor] = useState(0);
   const [me, setMe] = useState<string | undefined>();
@@ -62,7 +77,10 @@ export function LeaderboardTable({ scope, initialMetric = 'impact', initial }: {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.githubId} className={`border-t border-[var(--panel-border)] ${me && r.login.toLowerCase() === me.toLowerCase() ? 'bg-[rgba(124,196,255,0.08)]' : ''}`}>
+            <tr
+              key={r.githubId}
+              className={`border-t border-[var(--panel-border)] ${me && r.login.toLowerCase() === me.toLowerCase() ? 'bg-[rgba(124,196,255,0.08)]' : ''}`}
+            >
               <td className="num py-2 font-mono text-[var(--ink-3)]">{fmt(r.rank)}</td>
               <td className="py-2">
                 <Link href={`/@${r.login}`} className="flex items-center gap-2.5 hover:text-[var(--accent)]">
@@ -81,7 +99,12 @@ export function LeaderboardTable({ scope, initialMetric = 'impact', initial }: {
         <Button size="sm" variant="ghost" disabled={cursor === 0} onClick={() => setCursor(Math.max(0, cursor - 50))}>
           Previous
         </Button>
-        <Button size="sm" variant="ghost" disabled={data?.nextCursor == null} onClick={() => data?.nextCursor != null && setCursor(data.nextCursor)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={data?.nextCursor == null}
+          onClick={() => data?.nextCursor != null && setCursor(data.nextCursor)}
+        >
           Next
         </Button>
       </div>

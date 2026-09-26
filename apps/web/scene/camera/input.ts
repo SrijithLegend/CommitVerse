@@ -80,11 +80,15 @@ export class InputController {
     onWin('pointermove', (e) => this.pointerMove(e));
     onWin('pointerup', (e) => this.pointerUp(e));
     onWin('pointercancel', (e) => this.pointerUp(e));
-    on('wheel', (e) => {
-      e.preventDefault();
-      this.state.wheel += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-      this.state.anyInput = true;
-    }, { passive: false });
+    on(
+      'wheel',
+      (e) => {
+        e.preventDefault();
+        this.state.wheel += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+        this.state.anyInput = true;
+      },
+      { passive: false },
+    );
     onWin('keydown', (e) => this.key(e, true));
     onWin('keyup', (e) => this.key(e, false));
     onWin('blur', () => this.state.keys.clear());
@@ -127,7 +131,11 @@ export class InputController {
 
   private key(e: KeyboardEvent, down: boolean) {
     const t = e.target as HTMLElement | null;
-    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable || t.closest?.('[role="dialog"]'))) return;
+    if (
+      t &&
+      (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable || t.closest?.('[role="dialog"]'))
+    )
+      return;
     const action = this.actionFor(e);
     if (!action) return;
     const held: KeyAction[] = ['forward', 'back', 'left', 'right', 'up', 'down', 'rollLeft', 'rollRight', 'boost'];
@@ -188,7 +196,8 @@ export class InputController {
         const d = Math.hypot(a!.x - b!.x, a!.y - b!.y);
         const c = { x: (a!.x + b!.x) / 2, y: (a!.y + b!.y) / 2 };
         if (this.pinchDist > 0) this.state.pinch = (this.state.pinch || 1) * (d / this.pinchDist);
-        if (this.pinchCenter) this.state.pan = [(this.state.pan?.[0] ?? 0) + c.x - this.pinchCenter.x, (this.state.pan?.[1] ?? 0) + c.y - this.pinchCenter.y];
+        if (this.pinchCenter)
+          this.state.pan = [(this.state.pan?.[0] ?? 0) + c.x - this.pinchCenter.x, (this.state.pan?.[1] ?? 0) + c.y - this.pinchCenter.y];
         this.pinchDist = d;
         this.pinchCenter = c;
         return;

@@ -36,7 +36,13 @@ export function BeaconApprove({ initialCode }: { initialCode: string }) {
         Enter the code shown in VS Code. The Beacon token can only send heartbeats — the language you’re editing, nothing else.
       </p>
       <div className="mt-4 flex gap-2">
-        <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="ABCD-EFGH" aria-label="Device code" className="glass h-10 w-40 px-3 font-mono tracking-widest outline-none" />
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="ABCD-EFGH"
+          aria-label="Device code"
+          className="glass h-10 w-40 px-3 font-mono tracking-widest outline-none"
+        />
         <Button variant="primary" type="submit">
           Approve
         </Button>

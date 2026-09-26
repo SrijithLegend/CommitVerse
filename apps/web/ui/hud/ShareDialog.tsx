@@ -3,7 +3,8 @@
  * F14 share cards (landscape 1200×630, stories 1080×1920): a real 2× render from a flattering preset camera, with the
  * stats overlay composed on a 2D canvas → PNG download / Web Share. Plus a /v/{id} link to this exact shot.
  */
-import { Button, Dialog, Tabs } from '@commitverse/ui-kit';
+import { Button } from '@commitverse/ui-kit';
+import { Dialog, Tabs } from '@commitverse/ui-kit/radix';
 import { kelvinToHex, spectralSubclass } from '@commitverse/universe-core';
 import { useEffect, useState } from 'react';
 import { Api } from '@/lib/client/api';
@@ -42,7 +43,11 @@ async function compose(shot: Blob, preset: 'landscape' | 'stories'): Promise<Blo
     ctx.font = `${24 * s}px ui-monospace, monospace`;
     ctx.fillText(`@${d.user.login} · ${d.body.galaxy.language} galaxy`, pad, baseY + 38 * s);
     ctx.fillStyle = color;
-    ctx.fillText(`${spectralSubclass(d.body.temperature)} · ${d.body.state.replace('_', ' ')}${d.body.flags.includes('pulsar') ? ' · pulsar' : ''}`, pad, baseY + 74 * s);
+    ctx.fillText(
+      `${spectralSubclass(d.body.temperature)} · ${d.body.state.replace('_', ' ')}${d.body.flags.includes('pulsar') ? ' · pulsar' : ''}`,
+      pad,
+      baseY + 74 * s,
+    );
     const stats: [string, string][] = [
       ['CONTRIBUTIONS', fmt(d.metrics.cTotal)],
       ['30 DAYS', fmt(d.metrics.c30)],
@@ -83,14 +88,15 @@ export function ShareDialog() {
       .then((b) => {
         if (!alive) return;
         setBlob(b);
-        if (url) URL.revokeObjectURL(url);
-        setUrl(b ? URL.createObjectURL(b) : null);
+        setUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return b ? URL.createObjectURL(b) : null;
+        });
       })
       .finally(() => alive && setBusy(false));
     return () => {
       alive = false;
     };
-    // biome-ignore lint/correctness/useExhaustiveDependencies: regenerate only when the preset changes
   }, [preset]);
 
   const copyViewLink = async () => {
@@ -127,10 +133,16 @@ export function ShareDialog() {
       />
       <div className="mt-4 flex justify-center">
         {busy || !url ? (
-          <div className="flex aspect-[1200/630] w-full items-center justify-center rounded-lg border border-[var(--panel-border)] text-sm text-[var(--ink-3)]">Rendering…</div>
+          <div className="flex aspect-[1200/630] w-full items-center justify-center rounded-lg border border-[var(--panel-border)] text-sm text-[var(--ink-3)]">
+            Rendering…
+          </div>
         ) : (
           // biome-ignore lint/performance/noImgElement: blob preview
-          <img src={url} alt="Share card preview" className={`rounded-lg border border-[var(--panel-border)] ${preset === 'stories' ? 'max-h-[56vh]' : 'w-full'}`} />
+          <img
+            src={url}
+            alt="Share card preview"
+            className={`rounded-lg border border-[var(--panel-border)] ${preset === 'stories' ? 'max-h-[56vh]' : 'w-full'}`}
+          />
         )}
       </div>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -141,7 +153,9 @@ export function ShareDialog() {
           <Button
             variant="ghost"
             onClick={() => {
-              void navigator.clipboard.writeText(`[![My star on Commitverse](${location.origin}/api/embed/${focus.user.login}.svg)](${location.origin}/@${focus.user.login})`);
+              void navigator.clipboard.writeText(
+                `[![My star on Commitverse](${location.origin}/api/embed/${focus.user.login}.svg)](${location.origin}/@${focus.user.login})`,
+              );
               toast('README embed snippet copied');
             }}
           >

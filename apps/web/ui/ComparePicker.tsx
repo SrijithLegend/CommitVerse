@@ -18,11 +18,21 @@ export function ComparePicker({ first }: { first: string }) {
     >
       <label className="flex flex-col gap-1 text-sm text-[var(--ink-2)]">
         First star
-        <input value={a} onChange={(e) => setA(e.target.value)} className="glass h-10 px-3 font-mono text-[var(--ink-1)] outline-none" placeholder="@login" />
+        <input
+          value={a}
+          onChange={(e) => setA(e.target.value)}
+          className="glass h-10 px-3 font-mono text-[var(--ink-1)] outline-none"
+          placeholder="@login"
+        />
       </label>
       <label className="flex flex-col gap-1 text-sm text-[var(--ink-2)]">
         Second star
-        <input value={b} onChange={(e) => setB(e.target.value)} className="glass h-10 px-3 font-mono text-[var(--ink-1)] outline-none" placeholder="@login" />
+        <input
+          value={b}
+          onChange={(e) => setB(e.target.value)}
+          className="glass h-10 px-3 font-mono text-[var(--ink-1)] outline-none"
+          placeholder="@login"
+        />
       </label>
       <Button variant="primary" type="submit" disabled={!ok(a) || !ok(b)}>
         Compare

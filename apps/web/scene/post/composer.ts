@@ -151,7 +151,10 @@ export function createPost(
         composer.removePass(aaPass);
         aaPass.dispose();
       }
-      aaPass = new EffectPass(farCam, t === 'low' ? new FXAAEffect() : new SMAAEffect({ preset: t === 'ultra' ? SMAAPreset.ULTRA : SMAAPreset.HIGH }));
+      aaPass = new EffectPass(
+        farCam,
+        t === 'low' ? new FXAAEffect() : new SMAAEffect({ preset: t === 'ultra' ? SMAAPreset.ULTRA : SMAAPreset.HIGH }),
+      );
       composer.addPass(aaPass);
     },
     dispose() {

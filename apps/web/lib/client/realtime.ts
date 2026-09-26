@@ -25,17 +25,30 @@ async function supabaseClient() {
   return supabase;
 }
 
-const EVENTS = ['status', 'notification', 'comet', 'supernova', 'signal', 'bake', 'delta', 'hide', 'equip', 'beacon', 'flags', ...[
-  'claimed',
-  'achievement_unlocked',
-  'gift_opened',
-  'signal_sent',
-  'repo_milestone',
-  'binary_formed',
-  'new_hypergiant',
-  'release',
-  'meteor_shower',
-]];
+const EVENTS = [
+  'status',
+  'notification',
+  'comet',
+  'supernova',
+  'signal',
+  'bake',
+  'delta',
+  'hide',
+  'equip',
+  'beacon',
+  'flags',
+  ...[
+    'claimed',
+    'achievement_unlocked',
+    'gift_opened',
+    'signal_sent',
+    'repo_milestone',
+    'binary_formed',
+    'new_hypergiant',
+    'release',
+    'meteor_shower',
+  ],
+];
 
 function dispatch(channel: string, event: string, payload: Record<string, unknown>) {
   for (const h of handlers.get(channel) ?? []) h(event, payload);
@@ -78,7 +91,9 @@ export function subscribe(channel: string, handler: Handler): () => void {
     if (!sbChannels.has(channel)) {
       void supabaseClient().then((sb) => {
         const ch = sb.channel(channel);
-        ch.on('broadcast', { event: '*' }, (msg: { event: string; payload: Record<string, unknown> }) => dispatch(channel, msg.event, msg.payload));
+        ch.on('broadcast', { event: '*' }, (msg: { event: string; payload: Record<string, unknown> }) =>
+          dispatch(channel, msg.event, msg.payload),
+        );
         ch.subscribe();
         sbChannels.set(channel, ch);
       });

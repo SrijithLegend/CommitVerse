@@ -1,7 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "envMode": "loose",
   "tasks": {
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "!.next/cache/**", "dist/**"] },
+    "build": { "dependsOn": ["^build"], "env": ["NEXT_PUBLIC_*", "SKIP_ENV_VALIDATION", "NODE_ENV"], "outputs": [".next/**", "!.next/cache/**", "dist/**"] },
     "typecheck": { "dependsOn": ["^typecheck"] },
     "test": { "dependsOn": [] },
     "dev": { "cache": false, "persistent": true }

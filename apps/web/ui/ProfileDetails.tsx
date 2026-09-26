@@ -57,7 +57,10 @@ export function ProfileDetails({ detail: s }: { detail: StarDetail }) {
               <li key={p.repoId} className="rounded-lg border border-[var(--panel-border)] p-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: p.languageColor }} aria-hidden />
-                  <Link href={`/@${s.user.login}?focus=${encodeURIComponent(p.name)}`} className="truncate text-sm text-[var(--ink-1)] hover:text-[var(--accent)]">
+                  <Link
+                    href={`/@${s.user.login}?focus=${encodeURIComponent(p.name)}`}
+                    className="truncate text-sm text-[var(--ink-1)] hover:text-[var(--accent)]"
+                  >
                     {p.name}
                   </Link>
                 </div>

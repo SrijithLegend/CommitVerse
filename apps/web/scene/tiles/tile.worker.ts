@@ -27,7 +27,18 @@ export type WorkerIn =
   | { type: 'abort'; key: string }
   | { type: 'evict'; key: string }
   | { type: 'delta'; url: string; etag: string | null; centers: Record<number, [number, number, number]> }
-  | { type: 'pick'; id: number; cam: [number, number, number]; viewProj: number[]; width: number; height: number; x: number; y: number; scale: number; dpr: number }
+  | {
+      type: 'pick';
+      id: number;
+      cam: [number, number, number];
+      viewProj: number[];
+      width: number;
+      height: number;
+      x: number;
+      y: number;
+      scale: number;
+      dpr: number;
+    }
   | { type: 'nearest'; id: number; pos: [number, number, number]; count: number; maxDist: number }
   | { type: 'find'; id: number; kind: 'hot' | 'hyper' | 'bright'; seed: number }
   | { type: 'labels'; id: number; cam: [number, number, number]; viewProj: number[]; width: number; height: number; max: number };
@@ -90,7 +101,9 @@ function worldOf(nd: NodeData, i: number): [number, number, number] {
 
 /** Compact per-attribute copies for the GPU (transferred) — the worker keeps its own for picking. */
 function gpuArrays(nd: NodeData) {
-  return { pos: nd.pos.slice(), props: nd.props.slice(), cosmetic: nd.cosmetic.slice(), index: nd.index.slice() };
+  // index as float: a Uint32 attribute is bound as an integer (vertexAttribIPointer) and fails against the shader's
+  // 'float aIndex' with GL_INVALID_OPERATION. Exact up to 2^24 = 16.7M stars.
+  return { pos: nd.pos.slice(), props: nd.props.slice(), cosmetic: nd.cosmetic.slice(), index: Float32Array.from(nd.index) };
 }
 
 function hit(nd: NodeData, i: number): PointHit {
@@ -118,10 +131,12 @@ async function load(msg: Extract<WorkerIn, { type: 'load' }>) {
     const node = ingest(msg.key, msg.galaxyId, msg.center, buf, ids);
     const decodeMs = performance.now() - t0;
     const arrays = gpuArrays(node);
-    post(
-      { type: 'loaded', key: msg.key, ...arrays, count: node.count, aabb: node.aabb, decodeMs, bytes: buf.byteLength },
-      [arrays.pos.buffer, arrays.props.buffer, arrays.cosmetic.buffer, arrays.index.buffer],
-    );
+    post({ type: 'loaded', key: msg.key, ...arrays, count: node.count, aabb: node.aabb, decodeMs, bytes: buf.byteLength }, [
+      arrays.pos.buffer,
+      arrays.props.buffer,
+      arrays.cosmetic.buffer,
+      arrays.index.buffer,
+    ]);
   } catch (err) {
     const aborted = (err as Error).name === 'AbortError';
     post({ type: 'failed', key: msg.key, aborted, error: err instanceof TileFormatError ? `format: ${err.message}` : String(err) });
@@ -144,10 +159,10 @@ async function loadDelta(msg: Extract<WorkerIn, { type: 'delta' }>) {
       const nd = ingest(`delta:${g.galaxyId}`, g.galaxyId, center, g.tile, g.ids);
       return { galaxyId: g.galaxyId, count: nd.count, aabb: nd.aabb, ...gpuArrays(nd) };
     });
-    post(
-      { type: 'delta', unchanged: false, hidden: d.hidden, groups, etag: res.headers.get('etag') },
-      [d.hidden.buffer, ...groups.flatMap((g) => [g.pos.buffer, g.props.buffer, g.cosmetic.buffer, g.index.buffer])],
-    );
+    post({ type: 'delta', unchanged: false, hidden: d.hidden, groups, etag: res.headers.get('etag') }, [
+      d.hidden.buffer,
+      ...groups.flatMap((g) => [g.pos.buffer, g.props.buffer, g.cosmetic.buffer, g.index.buffer]),
+    ]);
   } catch (err) {
     post({ type: 'delta', error: String(err) });
   }
@@ -188,8 +203,8 @@ function pick(msg: Extract<WorkerIn, { type: 'pick' }>) {
       const z = oz + (nd.pos[i * 3 + 2]! + 32768) * kz;
       const w = m[3]! * x + m[7]! * y + m[11]! * z + m[15]!;
       if (w <= 0.01) continue;
-      const px = ((m[0]! * x + m[4]! * y + m[8]! * z + m[12]!) / w * 0.5 + 0.5) * msg.width;
-      const py = (1 - ((m[1]! * x + m[5]! * y + m[9]! * z + m[13]!) / w * 0.5 + 0.5)) * msg.height;
+      const px = (((m[0]! * x + m[4]! * y + m[8]! * z + m[12]!) / w) * 0.5 + 0.5) * msg.width;
+      const py = (1 - (((m[1]! * x + m[5]! * y + m[9]! * z + m[13]!) / w) * 0.5 + 0.5)) * msg.height;
       const ddx = px - msg.x;
       const ddy = py - msg.y;
       const d2 = ddx * ddx + ddy * ddy;
@@ -265,8 +280,8 @@ function labels(msg: Extract<WorkerIn, { type: 'labels' }>) {
       if (dist > maxDist || dist < 20) continue;
       const w = m[3]! * x + m[7]! * y + m[11]! * z + m[15]!;
       if (w <= 0) continue;
-      const px = ((m[0]! * x + m[4]! * y + m[8]! * z + m[12]!) / w * 0.5 + 0.5) * msg.width;
-      const py = (1 - ((m[1]! * x + m[5]! * y + m[9]! * z + m[13]!) / w * 0.5 + 0.5)) * msg.height;
+      const px = (((m[0]! * x + m[4]! * y + m[8]! * z + m[12]!) / w) * 0.5 + 0.5) * msg.width;
+      const py = (1 - (((m[1]! * x + m[5]! * y + m[9]! * z + m[13]!) / w) * 0.5 + 0.5)) * msg.height;
       if (px < 0 || py < 0 || px > msg.width || py > msg.height) continue;
       out.push({ h: hit(nd, i), prio, x: px, y: py, dist });
     }

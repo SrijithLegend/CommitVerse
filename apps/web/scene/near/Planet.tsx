@@ -106,13 +106,21 @@ export function Planet({ planet, starColor, segments, skin, ringFlash = 0, timeO
       new THREE.ShaderMaterial({
         vertexShader: litVertex,
         fragmentShader: litFragment,
-        uniforms: { uColor: { value: new THREE.Color(0.55, 0.53, 0.5) }, uStarColor: { value: starColor }, uStarViewPos: surface.uniforms.uStarViewPos!, uEmissive: { value: 0 } },
+        uniforms: {
+          uColor: { value: new THREE.Color(0.55, 0.53, 0.5) },
+          uStarColor: { value: starColor },
+          uStarViewPos: surface.uniforms.uStarViewPos!,
+          uEmissive: { value: 0 },
+        },
       }),
     [starColor, surface],
   );
   const geo = useMemo(() => new THREE.SphereGeometry(1, segments[0], segments[1]), [segments]);
   const moonGeo = useMemo(() => new THREE.SphereGeometry(1, 12, 8), []);
-  const ringGeo = useMemo(() => (planet.ringBands > 0 ? new THREE.RingGeometry(1.4, 1.4 + 0.35 * planet.ringBands, 96, 1) : null), [planet.ringBands]);
+  const ringGeo = useMemo(
+    () => (planet.ringBands > 0 ? new THREE.RingGeometry(1.4, 1.4 + 0.35 * planet.ringBands, 96, 1) : null),
+    [planet.ringBands],
+  );
   const orbitLine = useMemo(() => {
     const pts: THREE.Vector3[] = [];
     for (let i = 0; i <= 128; i++) {
@@ -120,7 +128,12 @@ export function Planet({ planet, starColor, segments, skin, ringFlash = 0, timeO
       pts.push(new THREE.Vector3(x, y, z));
     }
     const g = new THREE.BufferGeometry().setFromPoints(pts);
-    const m = new THREE.LineBasicMaterial({ color: new THREE.Color(0.45, 0.55, 0.75), transparent: true, opacity: 0.14, depthWrite: false });
+    const m = new THREE.LineBasicMaterial({
+      color: new THREE.Color(0.45, 0.55, 0.75),
+      transparent: true,
+      opacity: 0.14,
+      depthWrite: false,
+    });
     return new THREE.Line(g, m);
   }, [planet]);
 

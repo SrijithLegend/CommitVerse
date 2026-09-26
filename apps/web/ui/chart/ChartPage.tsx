@@ -1,5 +1,5 @@
 'use client';
-import { Tabs } from '@commitverse/ui-kit';
+import { Tabs } from '@commitverse/ui-kit/radix';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUniverse } from '@/stores/universe';
 import { StarChart } from './StarChart';
@@ -12,7 +12,9 @@ export function ChartPage() {
   const tab = params.get('list') === '1' || webgl === 'unavailable' ? 'list' : 'chart';
   return (
     <>
-      {webgl === 'unavailable' && <p className="mb-3 text-sm text-[var(--warn)]">WebGL2 isn’t available on this device, so you’re in accessible list mode.</p>}
+      {webgl === 'unavailable' && (
+        <p className="mb-3 text-sm text-[var(--warn)]">WebGL2 isn’t available on this device, so you’re in accessible list mode.</p>
+      )}
       <Tabs
         tabs={[
           { value: 'chart', label: 'Chart' },

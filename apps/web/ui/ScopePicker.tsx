@@ -27,7 +27,13 @@ export function ScopePicker({ scope, galaxies }: { scope: string; galaxies: { id
           if (/^[a-zA-Z0-9-]{1,39}$/.test(org)) router.push(`/leaderboards?scope=org:${org}`);
         }}
       >
-        <input value={org} onChange={(e) => setOrg(e.target.value)} placeholder="org login" aria-label="Organisation" className="glass h-9 w-36 px-3 font-mono text-sm outline-none" />
+        <input
+          value={org}
+          onChange={(e) => setOrg(e.target.value)}
+          placeholder="org login"
+          aria-label="Organisation"
+          className="glass h-9 w-36 px-3 font-mono text-sm outline-none"
+        />
       </form>
     </div>
   );

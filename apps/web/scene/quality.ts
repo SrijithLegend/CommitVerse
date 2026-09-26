@@ -14,10 +14,50 @@ export interface TierConfig {
 }
 
 export const TIERS: Record<QualityTier, TierConfig> = {
-  low: { maxPoints: 150_000, dprCap: 1.0, dust: 4_000, lensing: 'sprite', nearStars: 2, planetSegments: [32, 16], skybox: 512, ships: 10, openThresholdPx: 220 },
-  medium: { maxPoints: 400_000, dprCap: 1.25, dust: 10_000, lensing: 'sprite', nearStars: 4, planetSegments: [48, 24], skybox: 1024, ships: 25, openThresholdPx: 170 },
-  high: { maxPoints: 1_000_000, dprCap: 1.5, dust: 20_000, lensing: 'screen', nearStars: 8, planetSegments: [64, 32], skybox: 2048, ships: 50, openThresholdPx: 130 },
-  ultra: { maxPoints: 2_000_000, dprCap: 2.0, dust: 40_000, lensing: 'screen+ring', nearStars: 12, planetSegments: [96, 48], skybox: 2048, ships: 100, openThresholdPx: 100 },
+  low: {
+    maxPoints: 150_000,
+    dprCap: 1.0,
+    dust: 4_000,
+    lensing: 'sprite',
+    nearStars: 2,
+    planetSegments: [32, 16],
+    skybox: 512,
+    ships: 10,
+    openThresholdPx: 220,
+  },
+  medium: {
+    maxPoints: 400_000,
+    dprCap: 1.25,
+    dust: 10_000,
+    lensing: 'sprite',
+    nearStars: 4,
+    planetSegments: [48, 24],
+    skybox: 1024,
+    ships: 25,
+    openThresholdPx: 170,
+  },
+  high: {
+    maxPoints: 1_000_000,
+    dprCap: 1.5,
+    dust: 20_000,
+    lensing: 'screen',
+    nearStars: 8,
+    planetSegments: [64, 32],
+    skybox: 2048,
+    ships: 50,
+    openThresholdPx: 130,
+  },
+  ultra: {
+    maxPoints: 2_000_000,
+    dprCap: 2.0,
+    dust: 40_000,
+    lensing: 'screen+ring',
+    nearStars: 12,
+    planetSegments: [96, 48],
+    skybox: 2048,
+    ships: 100,
+    openThresholdPx: 100,
+  },
 };
 
 export const TIER_ORDER: QualityTier[] = ['low', 'medium', 'high', 'ultra'];

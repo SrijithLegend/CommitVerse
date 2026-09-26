@@ -1,9 +1,9 @@
 import { CheckoutBody } from '@commitverse/contracts';
 import { killed } from '@commitverse/pipeline';
 import { body, route } from '@/lib/server/api';
-import { ApiError } from '@/lib/server/errors';
 import { db, env } from '@/lib/server/app';
 import { createCheckout } from '@/lib/server/economy';
+import { ApiError } from '@/lib/server/errors';
 
 export const POST = route(
   { auth: 'claimed', limits: [{ name: 'checkout', max: 10, windowS: 60, by: 'user' }] },

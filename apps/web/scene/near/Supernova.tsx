@@ -49,7 +49,9 @@ export function SupernovaFx() {
       if (event !== 'supernova') return;
       const githubId = Number(p.githubId);
       const b = await brief(githubId);
-      useUniverse.getState().set({ supernova: { githubId, login: String(p.login), at: Date.now(), position: b?.position ?? null, payload: p } });
+      useUniverse
+        .getState()
+        .set({ supernova: { githubId, login: String(p.login), at: Date.now(), position: b?.position ?? null, payload: p } });
       void Api.stats({ type: 'eyewitness', supernovaAt: new Date().toISOString() });
       play('supernova');
     });

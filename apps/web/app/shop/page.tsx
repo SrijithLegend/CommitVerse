@@ -4,7 +4,10 @@ import { PageShell } from '@/ui/PageShell';
 import { SceneIntent } from '@/ui/SceneIntent';
 import { Shop } from '@/ui/Shop';
 
-export const metadata: Metadata = { title: 'Shop', description: 'Cosmetics for your star. Cosmetics never change size, temperature, luminosity, position or rank.' };
+export const metadata: Metadata = {
+  title: 'Shop',
+  description: 'Cosmetics for your star. Cosmetics never change size, temperature, luminosity, position or rank.',
+};
 
 export default function ShopPage() {
   return (

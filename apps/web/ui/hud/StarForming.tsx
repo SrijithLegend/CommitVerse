@@ -24,7 +24,9 @@ export function StarForming() {
     const apply = (status: string, extra: { error?: string | null; queuePosition?: number | null } = {}) => {
       const cur = useUniverse.getState().forming;
       if (!cur || cur.jobId !== forming.jobId) return;
-      useUniverse.getState().set({ forming: { ...cur, status, error: extra.error ?? cur.error, queuePosition: extra.queuePosition ?? cur.queuePosition } });
+      useUniverse
+        .getState()
+        .set({ forming: { ...cur, status, error: extra.error ?? cur.error, queuePosition: extra.queuePosition ?? cur.queuePosition } });
       if (status === 'born') {
         setTimeout(() => {
           useUniverse.getState().set({ forming: null });
@@ -56,7 +58,11 @@ export function StarForming() {
   return (
     <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center" role="status" aria-live="polite">
       {!failed && (
-        <div aria-hidden className="absolute h-[60vmin] w-[60vmin] animate-[nebula_6s_ease-in-out_infinite] rounded-full opacity-70 blur-2xl" style={{ background: 'radial-gradient(circle, rgba(255,95,179,0.35), rgba(122,60,255,0.18) 45%, transparent 70%)' }} />
+        <div
+          aria-hidden
+          className="absolute h-[60vmin] w-[60vmin] animate-[nebula_6s_ease-in-out_infinite] rounded-full opacity-70 blur-2xl"
+          style={{ background: 'radial-gradient(circle, rgba(255,95,179,0.35), rgba(122,60,255,0.18) 45%, transparent 70%)' }}
+        />
       )}
       <div className="glass pointer-events-auto relative w-[min(92vw,380px)] p-5 text-center">
         {failed ? (
@@ -87,7 +93,11 @@ export function StarForming() {
                 ))}
               </ul>
             )}
-            <button type="button" onClick={() => useUniverse.getState().set({ forming: null })} className="mt-4 text-sm text-[var(--ink-2)] hover:text-[var(--ink-1)]">
+            <button
+              type="button"
+              onClick={() => useUniverse.getState().set({ forming: null })}
+              className="mt-4 text-sm text-[var(--ink-2)] hover:text-[var(--ink-1)]"
+            >
               Close
             </button>
           </>
@@ -98,8 +108,14 @@ export function StarForming() {
             <ol className="mt-4 flex items-center justify-between gap-1">
               {STEPS.map((s, i) => (
                 <li key={s} className="flex flex-1 flex-col items-center gap-1.5">
-                  <span className={`h-1.5 w-full rounded-full ${i <= idx ? 'bg-[var(--accent)]' : 'bg-[rgba(160,190,255,0.12)]'} ${i === idx ? 'animate-pulse' : ''}`} />
-                  <span className={`font-mono text-[10px] uppercase tracking-wider ${i <= idx ? 'text-[var(--ink-1)]' : 'text-[var(--ink-3)]'}`}>{s}</span>
+                  <span
+                    className={`h-1.5 w-full rounded-full ${i <= idx ? 'bg-[var(--accent)]' : 'bg-[rgba(160,190,255,0.12)]'} ${i === idx ? 'animate-pulse' : ''}`}
+                  />
+                  <span
+                    className={`font-mono text-[10px] uppercase tracking-wider ${i <= idx ? 'text-[var(--ink-1)]' : 'text-[var(--ink-3)]'}`}
+                  >
+                    {s}
+                  </span>
                 </li>
               ))}
             </ol>

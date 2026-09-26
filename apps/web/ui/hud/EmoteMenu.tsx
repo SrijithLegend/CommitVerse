@@ -16,7 +16,13 @@ export function EmoteMenu() {
   if (!process.env.NEXT_PUBLIC_REALTIME_URL || !presence.sector) return null;
   return (
     <div className="pointer-events-auto fixed bottom-7 right-4 z-30">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="glass h-11 w-11 rounded-full text-lg" aria-label="Emotes" aria-expanded={open}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="glass h-11 w-11 rounded-full text-lg"
+        aria-label="Emotes"
+        aria-expanded={open}
+      >
         ☺
       </button>
       {open &&

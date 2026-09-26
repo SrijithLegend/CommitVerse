@@ -12,8 +12,8 @@ import * as THREE from 'three';
 import { Api } from '@/lib/client/api';
 import { useUniverse } from '@/stores/universe';
 import { sceneTime, useCameraRelative, useEngine } from '../context';
-import { TIERS } from '../quality';
 import { Cosmetics } from '../cosmetics/Cosmetics';
+import { TIERS } from '../quality';
 import { Planet } from './Planet';
 import { StarBody } from './StarBody';
 
@@ -25,7 +25,19 @@ export function starColorLinear(T: number): THREE.Color {
   return new THREE.Color(r / 255, g / 255, b / 255).convertSRGBToLinear().multiplyScalar(1.4);
 }
 
-function Belt({ inner, outer, count, seed, starColor }: { inner: number; outer: number; count: number; seed: number; starColor: THREE.Color }) {
+function Belt({
+  inner,
+  outer,
+  count,
+  seed,
+  starColor,
+}: {
+  inner: number;
+  outer: number;
+  count: number;
+  seed: number;
+  starColor: THREE.Color;
+}) {
   const engine = useEngine();
   const ref = useRef<THREE.InstancedMesh>(null);
   const group = useRef<THREE.Group>(null);
@@ -34,7 +46,12 @@ function Belt({ inner, outer, count, seed, starColor }: { inner: number; outer: 
       new THREE.ShaderMaterial({
         vertexShader: litVertex,
         fragmentShader: LIT_F,
-        uniforms: { uColor: { value: new THREE.Color(0.42, 0.39, 0.36) }, uStarColor: { value: starColor }, uStarViewPos: { value: new THREE.Vector3() }, uEmissive: { value: 0 } },
+        uniforms: {
+          uColor: { value: new THREE.Color(0.42, 0.39, 0.36) },
+          uStarColor: { value: starColor },
+          uStarViewPos: { value: new THREE.Vector3() },
+          uEmissive: { value: 0 },
+        },
       }),
     [starColor],
   );
@@ -42,7 +59,8 @@ function Belt({ inner, outer, count, seed, starColor }: { inner: number; outer: 
     const g = new THREE.IcosahedronGeometry(1, 0);
     const p = g.attributes.position as THREE.BufferAttribute;
     const r = mulberry32(seed);
-    for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) * (0.7 + r() * 0.6), p.getY(i) * (0.7 + r() * 0.6), p.getZ(i) * (0.7 + r() * 0.6));
+    for (let i = 0; i < p.count; i++)
+      p.setXYZ(i, p.getX(i) * (0.7 + r() * 0.6), p.getY(i) * (0.7 + r() * 0.6), p.getZ(i) * (0.7 + r() * 0.6));
     g.computeVertexNormals();
     return g;
   }, [seed]);
@@ -62,10 +80,13 @@ function Belt({ inner, outer, count, seed, starColor }: { inner: number; outer: 
     }
     m.instanceMatrix.needsUpdate = true;
   }, [count, inner, outer, seed]);
-  useEffect(() => () => {
-    mat.dispose();
-    geo.dispose();
-  }, [mat, geo]);
+  useEffect(
+    () => () => {
+      mat.dispose();
+      geo.dispose();
+    },
+    [mat, geo],
+  );
   const tmp = useMemo(() => new THREE.Vector3(), []);
   useFrame(() => {
     if (group.current) {
@@ -94,13 +115,23 @@ function Oort({ density, seed }: { density: number; seed: number }) {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const m = new THREE.PointsMaterial({ color: new THREE.Color(0.55, 0.65, 0.9), size: 0.18, sizeAttenuation: true, transparent: true, opacity: 0.35, depthWrite: false });
+    const m = new THREE.PointsMaterial({
+      color: new THREE.Color(0.55, 0.65, 0.9),
+      size: 0.18,
+      sizeAttenuation: true,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+    });
     return new THREE.Points(g, m);
   }, [density, seed]);
-  useEffect(() => () => {
-    pts.geometry.dispose();
-    (pts.material as THREE.Material).dispose();
-  }, [pts]);
+  useEffect(
+    () => () => {
+      pts.geometry.dispose();
+      (pts.material as THREE.Material).dispose();
+    },
+    [pts],
+  );
   return <primitive object={pts} />;
 }
 
@@ -143,9 +174,19 @@ function Remnant({ until, radius }: { until: string; radius: number }) {
 
 function BeaconRing({ radius }: { radius: number }) {
   const ref = useRef<THREE.Mesh>(null);
-  const mat = useMemo(() => new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 1.6, 1.8), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), []);
+  const mat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: new THREE.Color(0.3, 1.6, 1.8),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+      }),
+    [],
+  );
   useFrame(() => {
-    const t = (Date.now() / 1000) % 1; // 1 Hz
+    const t = sceneTime() % 1; // 1 Hz
     if (ref.current) ref.current.scale.setScalar(radius * (1.6 + t * 2.4));
     mat.opacity = 0.8 * (1 - t);
   }, 0);
@@ -171,10 +212,13 @@ function GiftPods({ count, radius }: { count: number; radius: number }) {
       m.rotation.set(t * 0.7, t * 0.9, 0);
     });
   }, 0);
-  useEffect(() => () => {
-    mat.dispose();
-    ribbon.dispose();
-  }, [mat, ribbon]);
+  useEffect(
+    () => () => {
+      mat.dispose();
+      ribbon.dispose();
+    },
+    [mat, ribbon],
+  );
   return (
     <>
       {Array.from({ length: Math.min(count, 12) }, (_, i) => (
@@ -326,7 +370,12 @@ export function FocusedSystem({ detail }: { detail: StarDetail }) {
           skin={skin}
         />
         {detail.body.flags.includes('beacon') && <BeaconRing radius={detail.body.radius} />}
-        <Cosmetics cosmetics={cosmetics} radius={detail.body.radius} temperature={detail.body.temperature} githubId={detail.user.githubId} />
+        <Cosmetics
+          cosmetics={cosmetics}
+          radius={detail.body.radius}
+          temperature={detail.body.temperature}
+          githubId={detail.user.githubId}
+        />
         {detail.planets.map((p) => (
           <Planet
             key={p.repoId}
@@ -348,7 +397,9 @@ export function FocusedSystem({ detail }: { detail: StarDetail }) {
       </group>
       {binaryWith && <Companion login={binaryWith} primary={detail} />}
       {detail.body.oortDensity > 0 && <Oort density={detail.body.oortDensity} seed={seed} />}
-      {detail.social.remnantUntil && Date.parse(detail.social.remnantUntil) > Date.now() && <Remnant until={detail.social.remnantUntil} radius={detail.body.radius} />}
+      {detail.social.remnantUntil && Date.parse(detail.social.remnantUntil) > Date.now() && (
+        <Remnant until={detail.social.remnantUntil} radius={detail.body.radius} />
+      )}
     </group>
   );
 }

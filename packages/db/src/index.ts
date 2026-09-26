@@ -109,7 +109,7 @@ export async function migrate(db: Db, opts: { shim?: boolean; dir?: string } = {
   await db.query('create table if not exists _migrations (name text primary key, applied_at timestamptz not null default now())');
   const done = new Set((await db.query<{ name: string }>('select name from _migrations')).map((r) => r.name));
   const applied: string[] = [];
-  for (const file of readdirSync(dir)
+  for (const file of readdirSync(/*turbopackIgnore: true*/ dir)
     .filter((f) => f.endsWith('.sql'))
     .sort()) {
     if (done.has(file)) continue;

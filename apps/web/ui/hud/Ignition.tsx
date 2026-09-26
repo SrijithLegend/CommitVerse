@@ -30,9 +30,18 @@ export function Ignition() {
 }
 
 const STEPS = [
-  { title: 'This is your star', body: 'Its size is everything you’ve built, its colour how active you are right now, its glow how much the world notices.' },
-  { title: 'These are your planets', body: 'Your top repositories orbit you. Moons are forks, rings are releases. Click one to fly to it.' },
-  { title: 'Send your first signal', body: 'Find a developer you admire and send them a signal — a beam of light from your star to theirs.' },
+  {
+    title: 'This is your star',
+    body: 'Its size is everything you’ve built, its colour how active you are right now, its glow how much the world notices.',
+  },
+  {
+    title: 'These are your planets',
+    body: 'Your top repositories orbit you. Moons are forks, rings are releases. Click one to fly to it.',
+  },
+  {
+    title: 'Send your first signal',
+    body: 'Find a developer you admire and send them a signal — a beam of light from your star to theirs.',
+  },
 ];
 
 export function CoachMarks() {
@@ -53,7 +62,11 @@ export function CoachMarks() {
     void fetch('/api/v1/me', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ settings: {} }) });
   };
   return (
-    <div className="glass pointer-events-auto fixed bottom-40 left-1/2 z-40 w-[min(92vw,360px)] -translate-x-1/2 p-4" role="dialog" aria-label="Getting started">
+    <div
+      className="glass pointer-events-auto fixed bottom-40 left-1/2 z-40 w-[min(92vw,360px)] -translate-x-1/2 p-4"
+      role="dialog"
+      aria-label="Getting started"
+    >
       <div className="label">
         {step + 1} / {STEPS.length}
       </div>

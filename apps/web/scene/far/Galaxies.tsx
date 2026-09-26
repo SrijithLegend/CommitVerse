@@ -1,11 +1,11 @@
 'use client';
+import { diskFragment, diskVertex, dustFragment, dustVertex, glsl, impostorFragment, impostorVertex } from '@commitverse/shaders';
 /**
  * §5.3 galaxies: impostors rendered once from above into a render target (1024², Ultra 2048²), cross-faded with the
  * real points by distance; dust lanes (darkening) along arm inner edges; HII regions and blue young clusters along
  * leading edges; a supermassive black hole with an accretion disk at every core; bulge glow.
  */
 import type { ManifestGalaxy } from '@commitverse/universe-core';
-import { diskFragment, diskVertex, dustFragment, dustVertex, glsl, impostorFragment, impostorVertex } from '@commitverse/shaders';
 import { gaussian, hash32, mulberry32 } from '@commitverse/universe-core';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -54,7 +54,12 @@ function dustMaterials(tilt: THREE.Matrix3) {
     transparent: true,
     depthWrite: false,
   };
-  const uniforms = () => ({ uOffset: { value: new THREE.Vector3() }, uTilt: { value: tilt }, uPixelRatio: { value: 1 }, uFade: { value: 1 } });
+  const uniforms = () => ({
+    uOffset: { value: new THREE.Vector3() },
+    uTilt: { value: tilt },
+    uPixelRatio: { value: 1 },
+    uFade: { value: 1 },
+  });
   const dark = new THREE.ShaderMaterial({
     ...common,
     uniforms: uniforms(),
@@ -84,7 +89,17 @@ function BlackHole({ g }: { g: ManifestGalaxy }) {
       }),
     [rs],
   );
-  const bulge = useMemo(() => new THREE.SpriteMaterial({ color: new THREE.Color(2.2, 1.8, 1.2), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, map: bulgeTexture() }), []);
+  const bulge = useMemo(
+    () =>
+      new THREE.SpriteMaterial({
+        color: new THREE.Color(2.2, 1.8, 1.2),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        map: bulgeTexture(),
+      }),
+    [],
+  );
   useCameraRelative(ref, () => g.center);
   useEffect(() => {
     const entry = { position: g.center, rs };
@@ -224,13 +239,16 @@ function Galaxy({ g, dustCount, impostorSize }: { g: ManifestGalaxy; dustCount: 
     impMat.uniforms.uMap!.value = rt?.texture ?? null;
     impMat.uniforms.uHasMap!.value = rt ? 1 : 0;
   }, [rt, impMat]);
-  useEffect(() => () => {
-    rt?.dispose();
-    impMat.dispose();
-    dustGeo?.dispose();
-    mats.dark.dispose();
-    mats.glow.dispose();
-  }, [rt, impMat, dustGeo, mats]);
+  useEffect(
+    () => () => {
+      rt?.dispose();
+      impMat.dispose();
+      dustGeo?.dispose();
+      mats.dark.dispose();
+      mats.glow.dispose();
+    },
+    [rt, impMat, dustGeo, mats],
+  );
 
   useCameraRelative(imp, () => g.center);
   useFrame(() => {

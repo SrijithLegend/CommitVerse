@@ -1,8 +1,8 @@
 'use client';
-import { Button } from '@commitverse/ui-kit';
+import type { FeedEvent } from '@commitverse/contracts';
+import { Button, fmtDate } from '@commitverse/ui-kit';
 import Link from 'next/link';
 import { useState } from 'react';
-import type { FeedEvent } from '@commitverse/contracts';
 import { Api } from '@/lib/client/api';
 import { feedText, useLiveFeed } from './hud/FeedPanel';
 
@@ -19,7 +19,13 @@ export function FeedList() {
           <li key={e.id} className="flex items-start gap-3 rounded-lg px-3 py-2.5 hover:bg-[rgba(124,196,255,0.04)]">
             {e.actor?.avatarUrl && (
               // biome-ignore lint/performance/noImgElement: avatar
-              <img src={`${e.actor.avatarUrl}${e.actor.avatarUrl.includes('?') ? '&' : '?'}s=48`} alt="" width={24} height={24} className="mt-0.5 h-6 w-6 rounded-md" />
+              <img
+                src={`${e.actor.avatarUrl}${e.actor.avatarUrl.includes('?') ? '&' : '?'}s=48`}
+                alt=""
+                width={24}
+                height={24}
+                className="mt-0.5 h-6 w-6 rounded-md"
+              />
             )}
             <div className="min-w-0 flex-1">
               {e.actor ? (
@@ -29,7 +35,7 @@ export function FeedList() {
               ) : (
                 <span className="text-sm text-[var(--ink-1)]">{feedText(e)}</span>
               )}
-              <div className="font-mono text-[11px] text-[var(--ink-3)]">{new Date(e.createdAt).toLocaleString()}</div>
+              <div className="font-mono text-[11px] text-[var(--ink-3)]">{fmtDate(e.createdAt, true)}</div>
             </div>
           </li>
         ))}

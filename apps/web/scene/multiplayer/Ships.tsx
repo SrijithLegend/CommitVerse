@@ -1,4 +1,5 @@
 'use client';
+import { decodeSnapshot, EMOTES, encodeState, MSG, type ShipState } from '@commitverse/contracts';
 /**
  * F15 multiplayer presence: ships of online users in the same sector (octree level 6), via a Durable Object.
  * 5 Hz quantized state up; one batched snapshot per client down (its 50 nearest). 200 ms interpolation buffer +
@@ -13,7 +14,6 @@ import { useSettings } from '@/lib/client/settings';
 import { useUniverse } from '@/stores/universe';
 import { useEngine } from '../context';
 import { TIERS } from '../quality';
-import { decodeSnapshot, EMOTES, encodeState, MSG, type ShipState } from '@commitverse/contracts';
 
 const REALTIME = process.env.NEXT_PUBLIC_REALTIME_URL;
 const BUFFER_MS = 200;
@@ -52,11 +52,14 @@ export function Ships() {
     return m;
   }, []);
 
-  useEffect(() => () => {
-    ws.current?.close();
-    mesh.geometry.dispose();
-    (mesh.material as THREE.Material).dispose();
-  }, [mesh]);
+  useEffect(
+    () => () => {
+      ws.current?.close();
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+    },
+    [mesh],
+  );
 
   useEffect(() => {
     const onEmote = (e: Event) => {
@@ -180,7 +183,15 @@ export function Ships() {
       .filter(([, t]) => t.samples.length && (t.login || ghosts))
       .map(([id, t]) => {
         const last = t.samples.at(-1)!.s;
-        return { id, t, d: Math.hypot(last.pos[0] + sec.center[0] - pos[0]!, last.pos[1] + sec.center[1] - pos[1]!, last.pos[2] + sec.center[2] - pos[2]!) };
+        return {
+          id,
+          t,
+          d: Math.hypot(
+            last.pos[0] + sec.center[0] - pos[0]!,
+            last.pos[1] + sec.center[1] - pos[1]!,
+            last.pos[2] + sec.center[2] - pos[2]!,
+          ),
+        };
       })
       .sort((a, b) => a.d - b.d)
       .slice(0, max);
@@ -188,10 +199,11 @@ export function Ships() {
       const s = t.samples;
       let a = s[0]!;
       let b = s[s.length - 1]!;
-      for (let k = 0; k < s.length - 1; k++) if (s[k]!.t <= renderT && s[k + 1]!.t >= renderT) {
-        a = s[k]!;
-        b = s[k + 1]!;
-      }
+      for (let k = 0; k < s.length - 1; k++)
+        if (s[k]!.t <= renderT && s[k + 1]!.t >= renderT) {
+          a = s[k]!;
+          b = s[k + 1]!;
+        }
       const span = Math.max(1, b.t - a.t);
       const f = Math.max(0, Math.min(1, (renderT - a.t) / span));
       const extra = Math.max(0, renderT - b.t) / 1000;
@@ -204,7 +216,8 @@ export function Ships() {
       qa.slerp(qb, f);
       const scale = Math.max(1, p.length() * 0.004);
       const emote = t.emote && now - t.emote.at < 1500 ? t.emote : null;
-      if (emote?.name === 'spin') qa.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), ((now - emote.at) / 1500) * Math.PI * 4));
+      if (emote?.name === 'spin')
+        qa.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), ((now - emote.at) / 1500) * Math.PI * 4));
       m.compose(p, qa, new THREE.Vector3(scale, scale, scale));
       mesh.setMatrixAt(i, m);
       color.setHex(HULL_COLORS[b.s.hull] ?? 0xe8ecf6).multiplyScalar(emote?.name === 'flare' ? 4 : t.login ? 1.4 : 0.5);

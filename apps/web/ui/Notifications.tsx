@@ -1,4 +1,5 @@
 'use client';
+import { fmtDate } from '@commitverse/ui-kit';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
@@ -18,7 +19,9 @@ function describe(n: NotificationDto): { text: string; href?: string } {
     case 'drift':
       return { text: String(p.message) };
     case 'supernova':
-      return { text: `Supernova! ${p.kind === 'repo_stars' ? `${p.repo} reached` : 'You reached'} ${Number(p.threshold).toLocaleString()} (+250 ✦)` };
+      return {
+        text: `Supernova! ${p.kind === 'repo_stars' ? `${p.repo} reached` : 'You reached'} ${Number(p.threshold).toLocaleString()} (+250 ✦)`,
+      };
     case 'binding_request':
       return { text: 'Binary system request — accept it in settings', href: '/settings#binary' };
     case 'binding_accepted':
@@ -76,7 +79,7 @@ export function Notifications({ onClose }: { onClose: () => void }) {
               <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${n.read ? 'bg-transparent' : 'bg-[var(--accent)]'}`} />
               <span className="min-w-0 flex-1">
                 <span className="block text-[13px] text-[var(--ink-1)]">{d.text}</span>
-                <span className="block font-mono text-[11px] text-[var(--ink-3)]">{new Date(n.createdAt).toLocaleString()}</span>
+                <span className="block font-mono text-[11px] text-[var(--ink-3)]">{fmtDate(n.createdAt, true)}</span>
               </span>
             </>
           );

@@ -23,7 +23,13 @@ export interface ShipState {
 
 const q16 = (v: number) => Math.max(-32767, Math.min(32767, Math.round(v * 32767)));
 
-export function encodeState(localPos: [number, number, number], half: number, quat: [number, number, number, number], vel: [number, number, number], flags: number): ArrayBuffer {
+export function encodeState(
+  localPos: [number, number, number],
+  half: number,
+  quat: [number, number, number, number],
+  vel: [number, number, number],
+  flags: number,
+): ArrayBuffer {
   const b = new ArrayBuffer(22);
   const v = new DataView(b);
   v.setUint8(0, MSG.STATE);

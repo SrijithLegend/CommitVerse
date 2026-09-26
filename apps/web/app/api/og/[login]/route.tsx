@@ -73,15 +73,14 @@ export async function GET(_req: Request, ctx: { params: Promise<{ login: string 
         );
       })}
       <div style={{ position: 'absolute', left: 660, top: 120, display: 'flex', flexDirection: 'column', width: 500 }}>
-        <div style={{ fontSize: 22, color: '#9aa4bd', letterSpacing: 4 }}>COMMITVERSE</div>
-        <div style={{ fontSize: 64, fontWeight: 700, marginTop: 16, lineHeight: 1.05 }}>{s.user.name ?? s.user.login}</div>
-        <div style={{ fontSize: 28, color: '#9aa4bd', marginTop: 8 }}>
-          @{s.user.login} · {s.body.galaxy.language} galaxy
-        </div>
-        <div style={{ fontSize: 34, color, marginTop: 28 }}>
-          {s.body.subclass} · {stateLabel}
-          {s.body.flags.includes('pulsar') ? ' · pulsar' : ''}
-        </div>
+        <div style={{ display: 'flex', fontSize: 22, color: '#9aa4bd', letterSpacing: 4 }}>COMMITVERSE</div>
+        <div style={{ display: 'flex', fontSize: 64, fontWeight: 700, marginTop: 16, lineHeight: 1.05 }}>{s.user.name ?? s.user.login}</div>
+        <div
+          style={{ display: 'flex', fontSize: 28, color: '#9aa4bd', marginTop: 8 }}
+        >{`@${s.user.login} · ${s.body.galaxy.language} galaxy`}</div>
+        <div
+          style={{ display: 'flex', fontSize: 34, color, marginTop: 28 }}
+        >{`${s.body.subclass} · ${stateLabel}${s.body.flags.includes('pulsar') ? ' · pulsar' : ''}`}</div>
         <div style={{ display: 'flex', marginTop: 40, gap: 40 }}>
           {[
             ['CONTRIBUTIONS', fmt(s.metrics.cTotal)],
@@ -89,13 +88,15 @@ export async function GET(_req: Request, ctx: { params: Promise<{ login: string 
             ['STARS', fmt(s.metrics.starsTotal)],
           ].map(([k, v]) => (
             <div key={k} style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 18, color: '#5b6480', letterSpacing: 3 }}>{k}</div>
-              <div style={{ fontSize: 44, marginTop: 6 }}>{v}</div>
+              <div style={{ display: 'flex', fontSize: 18, color: '#5b6480', letterSpacing: 3 }}>{k}</div>
+              <div style={{ display: 'flex', fontSize: 44, marginTop: 6 }}>{v}</div>
             </div>
           ))}
         </div>
       </div>
-      <div style={{ position: 'absolute', right: 40, bottom: 28, fontSize: 18, color: '#5b6480' }}>Not affiliated with GitHub, Inc.</div>
+      <div style={{ display: 'flex', position: 'absolute', right: 40, bottom: 28, fontSize: 18, color: '#5b6480' }}>
+        Not affiliated with GitHub, Inc.
+      </div>
     </div>,
     {
       width: 1200,

@@ -2,7 +2,7 @@
  * The imperative core (§6.1 rule: React owns structure; per-frame work happens here against refs and typed arrays).
  * Frame order (§6.9): input → camera (float64) → camera-relative updates → LOD → animate → far/near render → post.
  */
-import { skyboxFragment, skyboxVertex, glsl } from '@commitverse/shaders';
+import { glsl, skyboxFragment, skyboxVertex } from '@commitverse/shaders';
 import type { Manifest } from '@commitverse/universe-core';
 import { dequantizeRadius, dequantizeTemperature, unpackFlags } from '@commitverse/universe-core';
 import * as THREE from 'three';
@@ -11,6 +11,7 @@ import { prefersReducedMotion, type QualityTier, useSettings } from '@/lib/clien
 import { type Focus, type FocusStar, sceneCommands, useUniverse, type Vec3d } from '@/stores/universe';
 import { InputController } from './camera/input';
 import { CameraRig, type NearestMass, type RigEnv } from './camera/rig';
+import { FREEZE } from './context';
 import { createPost, type PostStack } from './post/composer';
 import { AdaptiveQuality, TIERS } from './quality';
 import { createShared, type SharedPointUniforms } from './tiles/materials';
@@ -103,7 +104,7 @@ export class Engine {
     const cfg = TIERS[tier];
     this.tiles.pointBudget = cfg.maxPoints;
     this.tiles.openThresholdPx = cfg.openThresholdPx;
-    const dpr = Math.min(window.devicePixelRatio || 1, cfg.dprCap);
+    const dpr = FREEZE ? 1 : Math.min(window.devicePixelRatio || 1, cfg.dprCap);
     this.renderer.setPixelRatio(dpr);
     this.shared.uPixelRatio.value = dpr;
     this.post.setTier(tier, useSettings.getState().bloom);
@@ -159,7 +160,15 @@ export class Engine {
 
   async pickAt(x: number, y: number): Promise<PointHit | null> {
     const rect = this.renderer.domElement.getBoundingClientRect();
-    return this.tiles.pick(this.rig.pos, this.viewProj(), rect.width, rect.height, x - rect.left, y - rect.top, this.shared.uPixelRatio.value);
+    return this.tiles.pick(
+      this.rig.pos,
+      this.viewProj(),
+      rect.width,
+      rect.height,
+      x - rect.left,
+      y - rect.top,
+      this.shared.uPixelRatio.value,
+    );
   }
 
   private async select(x: number, y: number, double: boolean) {
@@ -211,7 +220,13 @@ export class Engine {
           s.set({ hover: { ...s.hover, screen: [at.x, at.y] } });
           return;
         }
-        const hover = { githubId: hit.githubId, starIndex: hit.starIndex, position: hit.position, screen: [at.x, at.y] as [number, number], kind: 'star' as const };
+        const hover = {
+          githubId: hit.githubId,
+          starIndex: hit.starIndex,
+          position: hit.position,
+          screen: [at.x, at.y] as [number, number],
+          kind: 'star' as const,
+        };
         s.set({ hover });
         if (!this.briefCache.has(hit.githubId)) {
           this.briefCache.set(
@@ -315,7 +330,9 @@ export class Engine {
           const n = m.galaxies.length || 1;
           const c0: Vec3d = [0, 0, 0];
           for (const g of m.galaxies) for (let i = 0; i < 3; i++) c0[i]! += g.center[i]! / n;
-          const extent = Math.max(...m.galaxies.map((g) => Math.hypot(g.center[0] - c0[0], g.center[1] - c0[1], g.center[2] - c0[2]) + g.radius));
+          const extent = Math.max(
+            ...m.galaxies.map((g) => Math.hypot(g.center[0] - c0[0], g.center[1] - c0[1], g.center[2] - c0[2]) + g.radius),
+          );
           this.input.setFlight(false);
           this.rig.warp = null;
           this.rig.orbitAround(c0, extent, { kind: 'supercluster', keepPosition: true });
@@ -336,6 +353,7 @@ export class Engine {
           break;
         }
         case 'cinematic':
+          if (FREEZE) break; // the idle tour runs on wall-clock timers; frozen frames must not depend on them
           this.rig.cinematic = true;
           void this.runCinematic();
           break;
@@ -386,8 +404,9 @@ export class Engine {
   // ─── Frame ────────────────────────────────────────────────────────────
 
   update(dt: number) {
+    if (FREEZE) dt = 1 / 60; // fixed step: the camera converges in a deterministic number of frames
     const now = performance.now();
-    this.time += dt;
+    this.time = FREEZE ? FREEZE.t : this.time + dt;
     this.frame++;
     this.rigEnv.reducedMotion = prefersReducedMotion();
     this.input.pollGamepad();
@@ -435,7 +454,7 @@ export class Engine {
     this.post.warp.set(prefersReducedMotion() ? 0 : this.rig.warpAmount, this.rig.arrivalFlash * 0.35, style, this.time);
     this.post.warpPass.enabled = this.rig.warpAmount > 0.001 || this.rig.arrivalFlash > 0.001;
     const t0 = performance.now();
-    this.post.composer.render(dt);
+    this.post.composer.render(FREEZE ? 1 / 60 : dt);
     const ms = performance.now() - t0 + dt * 0; // CPU submit time
     this.sampleFrame(dt * 1000, ms);
   }
@@ -444,21 +463,26 @@ export class Engine {
     const cfg = TIERS[this.tier];
     let best: { uv: THREE.Vector2; rs: number } | null = null;
     for (const bh of this.blackHoles) {
-      const rel = new THREE.Vector3(bh.position[0] - this.rig.pos[0]!, bh.position[1] - this.rig.pos[1]!, bh.position[2] - this.rig.pos[2]!);
+      const rel = new THREE.Vector3(
+        bh.position[0] - this.rig.pos[0]!,
+        bh.position[1] - this.rig.pos[1]!,
+        bh.position[2] - this.rig.pos[2]!,
+      );
       const dist = rel.length();
       const p = rel.clone().project(this.farCam);
       if (p.z > 1 || Math.abs(p.x) > 1.3 || Math.abs(p.y) > 1.3) continue;
-      const rsUv = (bh.rs / dist) / (2 * Math.tan(THREE.MathUtils.degToRad(this.farCam.fov) / 2));
+      const rsUv = bh.rs / dist / (2 * Math.tan(THREE.MathUtils.degToRad(this.farCam.fov) / 2));
       if (rsUv < 0.002) continue;
       if (!best || rsUv > best.rs) best = { uv: new THREE.Vector2(p.x * 0.5 + 0.5, p.y * 0.5 + 0.5), rs: rsUv };
     }
-    if (best && cfg.lensing !== 'sprite') this.post.lensing.set(best.uv, Math.min(best.rs, 0.2), size.x / size.y, 1, cfg.lensing === 'screen+ring');
+    if (best && cfg.lensing !== 'sprite')
+      this.post.lensing.set(best.uv, Math.min(best.rs, 0.2), size.x / size.y, 1, cfg.lensing === 'screen+ring');
     else this.post.lensing.set(new THREE.Vector2(), 0, 1, 0, false);
   }
 
   private sampleFrame(frameMs: number, _cpuMs: number) {
     const now = performance.now();
-    if (useSettings.getState().quality === 'auto') this.adaptive.sample(frameMs, now);
+    if (useSettings.getState().quality === 'auto' && !FREEZE) this.adaptive.sample(frameMs, now);
     this.frameTimes.push(frameMs);
     if (this.frameTimes.length >= 60) {
       const avg = this.frameTimes.reduce((a, b) => a + b, 0) / this.frameTimes.length;
@@ -525,7 +549,9 @@ export class Engine {
 
   private onContextLost = (e: Event) => {
     e.preventDefault();
-    void import('@sentry/nextjs').then((S) => S.captureMessage('webglcontextlost', { level: 'warning', extra: { tier: this.tier } })).catch(() => {});
+    void import('@sentry/nextjs')
+      .then((S) => S.captureMessage('webglcontextlost', { level: 'warning', extra: { tier: this.tier } }))
+      .catch(() => {});
   };
 
   private onContextRestored = () => {

@@ -1,10 +1,4 @@
 'use client';
-/**
- * §5.3 near-field star: icosphere (detail 5 ≤ 60 u, 3 otherwise) with granulation/sunspots/limb darkening, corona
- * quad (4·R), prominences (A/B/O), pulsar beams (period P + lighthouse flash), protostar cocoon, red-giant convection.
- * Physical attributes come ONLY from data props; cosmetics are rendered elsewhere (cosmetics layer).
- */
-import { useFrame } from '@react-three/fiber';
 import {
   beamFragment,
   beamVertex,
@@ -19,6 +13,12 @@ import {
   starSurfaceVertex,
 } from '@commitverse/shaders';
 import { hash32, hashUnit } from '@commitverse/universe-core';
+/**
+ * §5.3 near-field star: icosphere (detail 5 ≤ 60 u, 3 otherwise) with granulation/sunspots/limb darkening, corona
+ * quad (4·R), prominences (A/B/O), pulsar beams (period P + lighthouse flash), protostar cocoon, red-giant convection.
+ * Physical attributes come ONLY from data props; cosmetics are rendered elsewhere (cosmetics layer).
+ */
+import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { activityFromTemperature, temperatureTightness, useEngine } from '../context';
@@ -55,13 +55,28 @@ function arcGeometry(seed: number, i: number): THREE.TubeGeometry {
     const t = k / 24;
     const along = (t - 0.5) * span;
     const lift = Math.sin(t * Math.PI) * height;
-    const p = base.clone().applyAxisAngle(tangent.clone().cross(base).normalize(), 0).add(tangent.clone().multiplyScalar(along)).normalize();
+    const p = base
+      .clone()
+      .applyAxisAngle(tangent.clone().cross(base).normalize(), 0)
+      .add(tangent.clone().multiplyScalar(along))
+      .normalize();
     pts.push(p.multiplyScalar(1 + lift));
   }
   return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.02 + r * 0.025, 6, false);
 }
 
-export function StarBody({ githubId, radius, temperature, state, pulsarPeriod, skin = 0, intensity = 1, opacity = 1, detail = 'high', pickable = true }: StarBodyProps) {
+export function StarBody({
+  githubId,
+  radius,
+  temperature,
+  state,
+  pulsarPeriod,
+  skin = 0,
+  intensity = 1,
+  opacity = 1,
+  detail = 'high',
+  pickable = true,
+}: StarBodyProps) {
   const engine = useEngine();
   const meshRef = useRef<THREE.Mesh>(null);
   const beamsRef = useRef<THREE.Group>(null);
@@ -125,7 +140,10 @@ export function StarBody({ githubId, radius, temperature, state, pulsarPeriod, s
         : null,
     [engine, cls, temperature, seed],
   );
-  const arcs = useMemo(() => (cls && detail === 'high' ? Array.from({ length: 3 + (hash32(githubId) % 4) }, (_, i) => arcGeometry(githubId, i)) : []), [cls, detail, githubId]);
+  const arcs = useMemo(
+    () => (cls && detail === 'high' ? Array.from({ length: 3 + (hash32(githubId) % 4) }, (_, i) => arcGeometry(githubId, i)) : []),
+    [cls, detail, githubId],
+  );
   const cocoon = useMemo(
     () =>
       state === 'protostar'

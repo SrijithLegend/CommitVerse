@@ -84,13 +84,25 @@ export function StarChart({ onPick, height = 520 }: { onPick?: (login: string) =
   const router = useRouter();
   const canvas = useRef<HTMLCanvasElement>(null);
   const { manifest, stars } = useChartData();
-  const [filters, setFilters] = useState<ChartFilters>({ classes: new Set([0, 1, 2, 3, 4, 5, 6]), state: 'all', claimed: false, online: false });
+  const [filters, setFilters] = useState<ChartFilters>({
+    classes: new Set([0, 1, 2, 3, 4, 5, 6]),
+    state: 'all',
+    claimed: false,
+    online: false,
+  });
   const view = useRef({ cx: 0, cz: 0, scale: 0.002 });
   const [tick, setTick] = useState(0);
   const [status, setStatus] = useState('');
 
   const visible = useMemo(
-    () => stars.filter((s) => filters.classes.has(s.cls) && (filters.state === 'all' || s.state === filters.state) && (!filters.claimed || s.claimed) && (!filters.online || s.online)),
+    () =>
+      stars.filter(
+        (s) =>
+          filters.classes.has(s.cls) &&
+          (filters.state === 'all' || s.state === filters.state) &&
+          (!filters.claimed || s.claimed) &&
+          (!filters.online || s.online),
+      ),
     [stars, filters],
   );
 
@@ -112,6 +124,7 @@ export function StarChart({ onPick, height = 520 }: { onPick?: (login: string) =
     setTick((t) => t + 1);
   }, [manifest, height]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tick forces a redraw after pan/zoom mutate the view ref
   useEffect(() => {
     const c = canvas.current;
     if (!c || !manifest) return;
@@ -236,7 +249,10 @@ export function StarChart({ onPick, height = 520 }: { onPick?: (login: string) =
             }
             className={`rounded-full border px-2.5 py-1 font-mono text-[11px] ${filters.classes.has(i) ? 'border-[rgba(124,196,255,0.5)] text-[var(--ink-1)]' : 'border-[var(--panel-border)] text-[var(--ink-3)]'}`}
           >
-            <span className="mr-1.5 inline-block h-2 w-2 rounded-full" style={{ background: kelvinToHex([3000, 4400, 5600, 6700, 8600, 17000, 34000][i]!) }} />
+            <span
+              className="mr-1.5 inline-block h-2 w-2 rounded-full"
+              style={{ background: kelvinToHex([3000, 4400, 5600, 6700, 8600, 17000, 34000][i]!) }}
+            />
             {c}
           </button>
         ))}
@@ -253,14 +269,22 @@ export function StarChart({ onPick, height = 520 }: { onPick?: (login: string) =
           <option value="white_dwarf">White dwarfs</option>
         </select>
         <label className="flex items-center gap-1.5 text-[12px] text-[var(--ink-2)]">
-          <input type="checkbox" checked={filters.claimed} onChange={(e) => setFilters((f) => ({ ...f, claimed: e.target.checked }))} /> Claimed
+          <input type="checkbox" checked={filters.claimed} onChange={(e) => setFilters((f) => ({ ...f, claimed: e.target.checked }))} />{' '}
+          Claimed
         </label>
         <label className="flex items-center gap-1.5 text-[12px] text-[var(--ink-2)]">
-          <input type="checkbox" checked={filters.online} onChange={(e) => setFilters((f) => ({ ...f, online: e.target.checked }))} /> Coding now
+          <input type="checkbox" checked={filters.online} onChange={(e) => setFilters((f) => ({ ...f, online: e.target.checked }))} />{' '}
+          Coding now
         </label>
         <span className="ml-auto font-mono text-[11px] text-[var(--ink-3)]">{visible.length.toLocaleString()} stars shown</span>
       </div>
-      <canvas ref={canvas} style={{ width: '100%', height }} className="cursor-crosshair rounded-[10px] border border-[var(--panel-border)]" aria-label="Star chart — use list mode for a keyboard-navigable table" role="img" />
+      <canvas
+        ref={canvas}
+        style={{ width: '100%', height }}
+        className="cursor-crosshair rounded-[10px] border border-[var(--panel-border)]"
+        aria-label="Star chart — use list mode for a keyboard-navigable table"
+        role="img"
+      />
       <p className="sr-only" aria-live="polite">
         {status}
       </p>

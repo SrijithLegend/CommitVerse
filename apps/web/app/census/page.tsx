@@ -1,5 +1,5 @@
 /** F17 Galactic Census — universe-wide stats, refreshed monthly (page ISR 1 h). */
-import { compact, fmt, Stat } from '@commitverse/ui-kit';
+import { compact, fmt, fmtDate, Stat } from '@commitverse/ui-kit';
 import { kelvinToHex } from '@commitverse/universe-core';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -8,7 +8,10 @@ import { census } from '@/lib/server/queries';
 import { PageShell } from '@/ui/PageShell';
 import { SceneIntent } from '@/ui/SceneIntent';
 
-export const metadata: Metadata = { title: 'Galactic Census', description: 'The state of the universe: stars, classes, galaxies and events.' };
+export const metadata: Metadata = {
+  title: 'Galactic Census',
+  description: 'The state of the universe: stars, classes, galaxies and events.',
+};
 export const revalidate = 3600;
 const CLASS_T: Record<string, number> = { M: 3000, K: 4400, G: 5600, F: 6700, A: 8600, B: 17000, O: 34000 };
 
@@ -41,7 +44,10 @@ export default async function Census() {
               <li key={k.cls} className="flex items-center gap-3 text-sm">
                 <span className="w-4 font-mono text-[var(--ink-1)]">{k.cls}</span>
                 <span className="h-2 flex-1 overflow-hidden rounded-full bg-[rgba(160,190,255,0.06)]">
-                  <span className="block h-full" style={{ width: `${(k.n / classTotal) * 100}%`, background: kelvinToHex(CLASS_T[k.cls] ?? 5000) }} />
+                  <span
+                    className="block h-full"
+                    style={{ width: `${(k.n / classTotal) * 100}%`, background: kelvinToHex(CLASS_T[k.cls] ?? 5000) }}
+                  />
                 </span>
                 <span className="num w-20 text-right font-mono text-xs text-[var(--ink-2)]">{fmt((k.n / classTotal) * 100, 1)}%</span>
               </li>
@@ -62,7 +68,10 @@ export default async function Census() {
           <ul className="mt-3 space-y-1.5">
             {c.galaxies.map((g) => (
               <li key={g.id} className="flex items-center gap-3 text-sm">
-                <Link href={`/galaxy/${encodeURIComponent(g.language)}`} className="w-36 truncate text-[var(--ink-1)] hover:text-[var(--accent)]">
+                <Link
+                  href={`/galaxy/${encodeURIComponent(g.language)}`}
+                  className="w-36 truncate text-[var(--ink-1)] hover:text-[var(--accent)]"
+                >
                   {g.language}
                 </Link>
                 <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[rgba(160,190,255,0.06)]">
@@ -83,7 +92,7 @@ export default async function Census() {
                 <Link href={`/@${s.login}`} className="font-mono text-[var(--ink-1)] hover:text-[var(--accent)]">
                   @{s.login}
                 </Link>{' '}
-                · {fmt(Number(s.payload.threshold))} {String(s.payload.kind).replace('_', ' ')} · {new Date(s.at).toLocaleDateString()}
+                · {fmt(Number(s.payload.threshold))} {String(s.payload.kind).replace('_', ' ')} · {fmtDate(s.at)}
               </li>
             ))}
           </ul>

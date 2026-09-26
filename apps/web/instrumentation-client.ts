@@ -5,4 +5,5 @@ if (dsn) {
     Sentry.init({ dsn, tracesSampleRate: 0.05, replaysSessionSampleRate: 0 });
   });
 }
+
 export {};

@@ -8,7 +8,10 @@ type Camera = { pos: [number, number, number]; quat: [number, number, number, nu
 
 async function load(id: string) {
   if (!/^[0-9a-zA-Z]{10}$/.test(id)) return null;
-  const [v] = await (await db()).query<{ camera: Camera; bake_version: string }>('select camera, bake_version from shared_views where id = $1', [id]);
+  const [v] = await (await db()).query<{ camera: Camera; bake_version: string }>(
+    'select camera, bake_version from shared_views where id = $1',
+    [id],
+  );
   return v ?? null;
 }
 

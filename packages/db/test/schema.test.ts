@@ -11,11 +11,11 @@ async function user(id: number, login = `u${id}`) {
   await db.query(`insert into github_users (github_id, login, created_at_gh) values ($1, $2, now() - interval '5 years')`, [id, login]);
 }
 async function account(id: number) {
-  const [{ id: uid }] = await db.query<{ id: string }>('insert into auth.users default values returning id');
+  const uid = (await db.query<{ id: string }>('insert into auth.users default values returning id'))[0]!.id;
   await db.query('insert into accounts (auth_user_id, github_id, referral_code) values ($1, $2, $3)', [uid, id, `ref${id}`]);
 }
 
-describe('§9 schema', () => {
+describe('Â§9 schema', () => {
   it('migrates and types int8 as numbers, dates as strings', async () => {
     await user(9_007_199_254, 'Octo-Cat');
     const [r] = await db.query<{ github_id: number; d: string }>(
@@ -34,9 +34,8 @@ describe('§9 schema', () => {
     await expect(
       db.query(`insert into stardust_ledger (github_id, delta, reason, ref_id) values (1, -11, 'purchase', 'x')`),
     ).rejects.toThrow();
-    const [{ stardust_balance }] = await db.query<{ stardust_balance: number }>(
-      'select stardust_balance from accounts where github_id = 1',
-    );
+    const [row] = await db.query<{ stardust_balance: number }>('select stardust_balance from accounts where github_id = 1');
+    const stardust_balance = row!.stardust_balance;
     expect(stardust_balance).toBe(10);
     await expect(db.query('delete from stardust_ledger')).rejects.toThrow(/append-only/);
   });

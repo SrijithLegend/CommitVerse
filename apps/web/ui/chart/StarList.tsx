@@ -65,7 +65,13 @@ export function StarList() {
   return (
     <div>
       <div className="mb-3 flex flex-wrap gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter loaded stars by login" aria-label="Filter" className="glass h-8 px-2 text-sm outline-none" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Filter loaded stars by login"
+          aria-label="Filter"
+          className="glass h-8 px-2 text-sm outline-none"
+        />
         {CLASSES.map((c) => (
           <label key={c} className="flex items-center gap-1 font-mono text-xs text-[var(--ink-2)]">
             <input

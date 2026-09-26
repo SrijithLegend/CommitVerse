@@ -1,5 +1,5 @@
 'use client';
-import { Dialog } from '@commitverse/ui-kit';
+import { Dialog } from '@commitverse/ui-kit/radix';
 import { useRouter } from 'next/navigation';
 import { useUniverse } from '@/stores/universe';
 import { StarChart } from '../chart/StarChart';
@@ -9,7 +9,13 @@ export function ChartOverlay() {
   const router = useRouter();
   const close = () => useUniverse.getState().set({ overlay: null });
   return (
-    <Dialog open onOpenChange={(o) => !o && close()} title="Star chart" description="Drag to pan, scroll to zoom, click a star to warp." wide>
+    <Dialog
+      open
+      onOpenChange={(o) => !o && close()}
+      title="Star chart"
+      description="Drag to pan, scroll to zoom, click a star to warp."
+      wide
+    >
       <StarChart
         height={460}
         onPick={(login) => {

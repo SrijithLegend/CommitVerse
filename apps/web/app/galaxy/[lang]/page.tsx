@@ -23,7 +23,12 @@ async function load(lang: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const o = await load((await params).lang);
-  return o ? { title: `${o.galaxy.language} galaxy`, description: `${fmt(o.galaxy.population)} developers whose primary language is ${o.galaxy.language}.` } : { title: 'Galaxy not found' };
+  return o
+    ? {
+        title: `${o.galaxy.language} galaxy`,
+        description: `${fmt(o.galaxy.population)} developers whose primary language is ${o.galaxy.language}.`,
+      }
+    : { title: 'Galaxy not found' };
 }
 
 export default async function GalaxyPage({ params }: Props) {
@@ -34,7 +39,9 @@ export default async function GalaxyPage({ params }: Props) {
     <div className="pointer-events-none min-h-dvh px-4 pb-24 pt-20">
       <SceneIntent intent={{ type: 'galaxy', lang: o.galaxy.language }} />
       <aside className="glass pointer-events-auto ml-auto max-h-[calc(100dvh-7rem)] w-full max-w-md overflow-auto p-5 scroll-thin">
-        <div className="label">{o.galaxy.tier} galaxy{o.galaxy.arms ? ` · ${o.galaxy.arms} arms` : ''}</div>
+        <div className="label">
+          {o.galaxy.tier} galaxy{o.galaxy.arms ? ` · ${o.galaxy.arms} arms` : ''}
+        </div>
         <h1 className="mt-1 text-2xl font-semibold text-[var(--ink-1)]">{o.galaxy.language}</h1>
         <div className="mt-4 grid grid-cols-3 gap-3">
           <Stat label="Stars" value={compact(o.stats.stars ?? 0)} />
@@ -48,7 +55,11 @@ export default async function GalaxyPage({ params }: Props) {
           <div className="label">Spectral classes</div>
           <div className="mt-2 flex h-3 overflow-hidden rounded-full" role="img" aria-label="Spectral class distribution">
             {['M', 'K', 'G', 'F', 'A', 'B', 'O'].map((c) => (
-              <div key={c} style={{ width: `${((o.classes[c] ?? 0) / total) * 100}%`, background: kelvinToHex(CLASS_T[c]!) }} title={`${c}: ${o.classes[c] ?? 0}`} />
+              <div
+                key={c}
+                style={{ width: `${((o.classes[c] ?? 0) / total) * 100}%`, background: kelvinToHex(CLASS_T[c]!) }}
+                title={`${c}: ${o.classes[c] ?? 0}`}
+              />
             ))}
           </div>
           <div className="mt-1 flex justify-between font-mono text-[10px] text-[var(--ink-3)]">
@@ -60,7 +71,10 @@ export default async function GalaxyPage({ params }: Props) {
           </div>
         </div>
         <div className="mt-6">
-          <LeaderboardTable scope={`galaxy:${o.galaxy.id}`} initial={{ rows: o.top, nextCursor: o.top.length === 50 ? 50 : null, total: o.galaxy.population }} />
+          <LeaderboardTable
+            scope={`galaxy:${o.galaxy.id}`}
+            initial={{ rows: o.top, nextCursor: o.top.length === 50 ? 50 : null, total: o.galaxy.population }}
+          />
         </div>
       </aside>
     </div>

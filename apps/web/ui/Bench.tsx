@@ -91,7 +91,10 @@ export function Bench() {
         {running ? `Running — ${phase}` : 'Run benchmark'}
       </Button>
       {result && (
-        <pre className="mt-3 overflow-auto rounded bg-[rgba(160,190,255,0.06)] p-3 font-mono text-[11px] text-[var(--ink-1)]" data-testid="bench-result">
+        <pre
+          className="mt-3 overflow-auto rounded bg-[rgba(160,190,255,0.06)] p-3 font-mono text-[11px] text-[var(--ink-1)]"
+          data-testid="bench-result"
+        >
           {JSON.stringify(result, null, 2)}
         </pre>
       )}

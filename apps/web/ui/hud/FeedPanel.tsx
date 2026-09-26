@@ -15,7 +15,9 @@ export function feedText(e: FeedEvent): string {
     case 'claimed':
       return `${a} claimed their star`;
     case 'supernova':
-      return p.kind === 'repo_stars' ? `${a} went supernova — ${p.repo} hit ${Number(p.threshold).toLocaleString()} ★` : `${a} went supernova (${Number(p.threshold).toLocaleString()} ${p.kind === 'stars_total' ? 'stars' : 'contributions'})`;
+      return p.kind === 'repo_stars'
+        ? `${a} went supernova — ${p.repo} hit ${Number(p.threshold).toLocaleString()} ★`
+        : `${a} went supernova (${Number(p.threshold).toLocaleString()} ${p.kind === 'stars_total' ? 'stars' : 'contributions'})`;
     case 'achievement_unlocked':
       return `${a} unlocked ${p.name}`;
     case 'gift_opened':
@@ -63,7 +65,12 @@ export function FeedPanel() {
         <div className="glass pointer-events-auto flex max-h-[min(60vh,560px)] w-72 flex-col">
           <div className="flex items-center justify-between px-3 py-2">
             <span className="label">Cosmic feed</span>
-            <button type="button" onClick={() => setOpen(false)} className="text-[var(--ink-3)] hover:text-[var(--ink-1)]" aria-label="Collapse feed">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="text-[var(--ink-3)] hover:text-[var(--ink-1)]"
+              aria-label="Collapse feed"
+            >
               <ChevronLeft size={16} />
             </button>
           </div>
@@ -76,7 +83,9 @@ export function FeedPanel() {
                   className="w-full rounded-lg px-2.5 py-2 text-left text-[12.5px] text-[var(--ink-2)] hover:bg-[rgba(124,196,255,0.06)] hover:text-[var(--ink-1)]"
                 >
                   {feedText(e)}
-                  <span className="mt-0.5 block font-mono text-[10px] text-[var(--ink-3)]">{new Date(e.createdAt).toLocaleTimeString()}</span>
+                  <span className="mt-0.5 block font-mono text-[10px] text-[var(--ink-3)]">
+                    {new Date(e.createdAt).toLocaleTimeString()}
+                  </span>
                 </button>
               </li>
             ))}
@@ -84,7 +93,11 @@ export function FeedPanel() {
           </ul>
         </div>
       ) : (
-        <button type="button" onClick={() => setOpen(true)} className="glass pointer-events-auto flex h-9 items-center gap-2 px-3 text-[12px] text-[var(--ink-2)] hover:text-[var(--ink-1)]">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="glass pointer-events-auto flex h-9 items-center gap-2 px-3 text-[12px] text-[var(--ink-2)] hover:text-[var(--ink-1)]"
+        >
           <Radio size={14} className="text-[var(--accent)]" /> Cosmic feed
         </button>
       )}

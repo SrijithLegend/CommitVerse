@@ -1,7 +1,6 @@
 /** §3.5 constellation lines: minimum spanning tree of member positions (never a complete graph). */
 type P = [number, number, number];
 
-
 /** Prim's MST, O(n²) — n ≤ 64. Returns index pairs. */
 export function minimumSpanningTree(points: P[]): [number, number][] {
   const n = points.length;
@@ -29,4 +28,3 @@ export function minimumSpanningTree(points: P[]): [number, number][] {
   }
   return edges;
 }
-

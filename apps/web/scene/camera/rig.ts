@@ -164,8 +164,16 @@ export class CameraRig {
       return;
     }
     const bow = Math.min(dist * 0.18, 60_000);
-    const p1: Vec3d = [start[0] + (end[0] - start[0]) * 0.25, start[1] + (end[1] - start[1]) * 0.25 + bow, start[2] + (end[2] - start[2]) * 0.25];
-    const p2: Vec3d = [start[0] + (end[0] - start[0]) * 0.75, start[1] + (end[1] - start[1]) * 0.75 + bow, start[2] + (end[2] - start[2]) * 0.75];
+    const p1: Vec3d = [
+      start[0] + (end[0] - start[0]) * 0.25,
+      start[1] + (end[1] - start[1]) * 0.25 + bow,
+      start[2] + (end[2] - start[2]) * 0.25,
+    ];
+    const p2: Vec3d = [
+      start[0] + (end[0] - start[0]) * 0.75,
+      start[1] + (end[1] - start[1]) * 0.75 + bow,
+      start[2] + (end[2] - start[2]) * 0.75,
+    ];
     const dur = Math.max(1.5, Math.min(3.5, 1.2 + 0.45 * Math.log10(Math.max(1, dist))));
     this.warp = { t: 0, dur, p: [start, p1, p2, end], q0: this.quat.clone(), target, arrivalDist: arrival, radius, fade: false };
     this.mode = 'warp';
@@ -306,7 +314,7 @@ export class CameraRig {
       const d = Math.hypot(dx, dy, dz) || 1;
       const limit = 1.2 * m.radius;
       if (d < limit * 1.5) {
-        const push = d < limit ? (limit - d) + (limit * 0.5) * dt * 4 : 0;
+        const push = d < limit ? limit - d + limit * 0.5 * dt * 4 : 0;
         const soft = Math.max(0, (limit * 1.5 - d) / (limit * 0.5)) * this.speed * 0.5 * dt;
         const k2 = (push + soft) / d;
         this.pos[0]! += dx * k2;
@@ -314,6 +322,11 @@ export class CameraRig {
         this.pos[2]! += dz * k2;
       }
     }
-    this.fov = damp(this.fov, 60 + Math.min(12, (Math.hypot(this.vel[0]!, this.vel[1]!, this.vel[2]!) / Math.max(1, this.speed)) * 10 * (boost > 1 ? 1 : 0.3)), 5, dt);
+    this.fov = damp(
+      this.fov,
+      60 + Math.min(12, (Math.hypot(this.vel[0]!, this.vel[1]!, this.vel[2]!) / Math.max(1, this.speed)) * 10 * (boost > 1 ? 1 : 0.3)),
+      5,
+      dt,
+    );
   }
 }

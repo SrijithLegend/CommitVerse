@@ -14,7 +14,12 @@ export function SupernovaToast() {
   }, [sn]);
   if (!sn || !visible) return null;
   const p = sn.payload as { kind?: string; threshold?: number; repo?: string | null };
-  const what = p.kind === 'repo_stars' ? `${p.repo} reached ${Number(p.threshold).toLocaleString()} ★` : p.kind === 'stars_total' ? `${Number(p.threshold).toLocaleString()} total stars` : `${Number(p.threshold).toLocaleString()} contributions`;
+  const what =
+    p.kind === 'repo_stars'
+      ? `${p.repo} reached ${Number(p.threshold).toLocaleString()} ★`
+      : p.kind === 'stars_total'
+        ? `${Number(p.threshold).toLocaleString()} total stars`
+        : `${Number(p.threshold).toLocaleString()} contributions`;
   return (
     <div className="glass pointer-events-auto fixed left-1/2 top-16 z-40 flex -translate-x-1/2 items-center gap-4 px-4 py-3" role="alert">
       <span aria-hidden className="h-3 w-3 animate-ping rounded-full bg-white" />

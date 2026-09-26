@@ -26,25 +26,38 @@ export async function goToStar(router: ReturnType<typeof useRouter>, login: stri
       play('warp');
       return;
     }
-    useUniverse.getState().set({ forming: { login: clean, jobId: r.jobId, status: 'queued', queuePosition: r.queuePosition ?? null, error: null } });
-    const voidG = useUniverse.getState().manifest?.galaxies.find((g) => g.language === 'Void') ?? useUniverse.getState().manifest?.galaxies.at(-1);
+    useUniverse
+      .getState()
+      .set({ forming: { login: clean, jobId: r.jobId, status: 'queued', queuePosition: r.queuePosition ?? null, error: null } });
+    const voidG =
+      useUniverse.getState().manifest?.galaxies.find((g) => g.language === 'Void') ?? useUniverse.getState().manifest?.galaxies.at(-1);
     if (voidG) {
       const { sceneCommands } = await import('@/stores/universe');
       sceneCommands.push({ type: 'warpTo', position: voidG.center, radius: 40, frame: 400 });
     }
   } catch (e) {
     if (e instanceof ApiProblem && e.status === 410) toast('That star was removed at its owner’s request.');
-    else if (e instanceof ApiProblem && e.code === 'github_unavailable') toast('This deployment can’t fetch new stars from GitHub right now. Try a mapped star.');
+    else if (e instanceof ApiProblem && e.code === 'github_unavailable')
+      toast('This deployment can’t fetch new stars from GitHub right now. Try a mapped star.');
     else if (e instanceof ApiProblem && e.status === 429) toast(e.message, { tone: 'error' });
     else if (e instanceof ApiProblem && e.code === 'challenge_required') toast('Please complete the challenge to keep forming stars.');
     else toast('The search signal was lost. Try again.', { tone: 'error' });
   }
 }
 
-export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star — GitHub username' }: { autoFocus?: boolean; variant?: 'bar' | 'hero'; placeholder?: string }) {
+export function Search({
+  autoFocus,
+  variant = 'bar',
+  placeholder = 'Find a star — GitHub username',
+}: {
+  autoFocus?: boolean;
+  variant?: 'bar' | 'hero';
+  placeholder?: string;
+}) {
   const router = useRouter();
   const [q, setQ] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [resultsFor, setResultsFor] = useState(''); // the term that results answer; stale while the debounce is pending
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
@@ -83,6 +96,7 @@ export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star 
       Api.search(term, ctrl.signal)
         .then((r) => {
           setResults(r.results);
+          setResultsFor(term);
           setActive(0);
         })
         .catch(() => {});
@@ -116,7 +130,9 @@ export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star 
         onSubmit={(e) => {
           e.preventDefault();
           const exact = results.find((r) => r.login.toLowerCase() === q.trim().replace(/^@/, '').toLowerCase());
-          void choose(open && results[active] && q.trim() ? (results[active] ?? exact ?? null) : (exact ?? null));
+          // Enter before the debounce lands must not pick the top hit of the previous (prefix) query
+          const fresh = resultsFor === q.trim();
+          void choose(open && fresh && results[active] ? results[active] : (exact ?? null));
         }}
       >
         <label htmlFor={`${listId}-input`} className="sr-only">
@@ -125,6 +141,7 @@ export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star 
         <input
           id={`${listId}-input`}
           ref={input}
+          // biome-ignore lint/a11y/noAutofocus: opt-in per caller (search overlay opened by the / shortcut)
           autoFocus={autoFocus}
           value={q}
           onChange={(e) => {
@@ -147,7 +164,7 @@ export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star 
           }}
           role="combobox"
           aria-expanded={open && results.length > 0}
-          aria-controls={listId}
+          aria-controls={open && results.length > 0 ? listId : undefined}
           aria-autocomplete="list"
           aria-activedescendant={open && results[active] ? `${listId}-${active}` : undefined}
           autoComplete="off"
@@ -156,7 +173,9 @@ export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star 
           className={`glass w-full border-[rgba(160,190,255,0.14)] bg-[rgba(10,14,26,0.6)] font-mono text-[var(--ink-1)] outline-none placeholder:text-[var(--ink-3)] focus:border-[rgba(124,196,255,0.55)] ${hero ? 'h-14 px-5 text-base' : 'h-9 px-3 text-[13px]'}`}
         />
         {!hero && (
-          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-[rgba(160,190,255,0.18)] px-1.5 font-mono text-[10px] text-[var(--ink-3)]">/</span>
+          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-[rgba(160,190,255,0.18)] px-1.5 font-mono text-[10px] text-[var(--ink-3)]">
+            /
+          </span>
         )}
       </form>
       {open && results.length > 0 && (
@@ -174,7 +193,13 @@ export function Search({ autoFocus, variant = 'bar', placeholder = 'Find a star 
             >
               {r.avatarUrl ? (
                 // biome-ignore lint/performance/noImgElement: tiny remote avatars
-                <img src={`${r.avatarUrl}${r.avatarUrl.includes('?') ? '&' : '?'}s=48`} alt="" width={24} height={24} className="h-6 w-6 rounded-full" />
+                <img
+                  src={`${r.avatarUrl}${r.avatarUrl.includes('?') ? '&' : '?'}s=48`}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-full"
+                />
               ) : (
                 <span className="h-6 w-6 rounded-full bg-[rgba(160,190,255,0.1)]" />
               )}

@@ -4,7 +4,7 @@
  * Stardust redemption and daily check-in, signal limits, claims + verified referrals.
  */
 import { createHmac } from 'node:crypto';
-import { type Db, createTestDb } from '@commitverse/db';
+import { createTestDb, type Db } from '@commitverse/db';
 import { createLocalQueue, type JobQueue, syncAchievementCatalog, syncItems } from '@commitverse/pipeline';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { claimStar } from '@/lib/server/claim';
@@ -18,7 +18,11 @@ let seq = 0;
 
 async function user(login: string, opts: { ageDays?: number; cTotal?: number } = {}): Promise<number> {
   const id = 100_000 + ++seq;
-  await db.query(`insert into github_users (github_id, login, created_at_gh) values ($1, $2, now() - make_interval(days => $3))`, [id, login, opts.ageDays ?? 1000]);
+  await db.query(`insert into github_users (github_id, login, created_at_gh) values ($1, $2, now() - make_interval(days => $3))`, [
+    id,
+    login,
+    opts.ageDays ?? 1000,
+  ]);
   await db.query(`insert into user_metrics (github_id, c_total) values ($1, $2)`, [id, opts.cTotal ?? 500]);
   await db.query(
     `insert into bodies (github_id, bake_version, galaxy_id, star_index, x, y, z, radius, base_radius, temperature, spectral_class, luminosity, impact, state)
@@ -38,7 +42,9 @@ beforeAll(async () => {
   db = await createTestDb();
   queue = createLocalQueue(db); // no workers registered: jobs just queue
   await db.query(`insert into bake_runs (version, status, params_hash) values ('v', 'live', 'x')`);
-  await db.query(`insert into galaxies (id, language, tier, radius, center, population, bake_version) values (1, 'TypeScript', 'major', 1000, '{0,0,0}', 1, 'v')`);
+  await db.query(
+    `insert into galaxies (id, language, tier, radius, center, population, bake_version) values (1, 'TypeScript', 'major', 1000, '{0,0,0}', 1, 'v')`,
+  );
   await syncAchievementCatalog(db);
   await syncItems(db);
 });
@@ -78,7 +84,9 @@ describe('F7 payments', () => {
     await equip(db, id, 'corona', inv!.id);
     await markRefunded(db, o.id);
     expect((await db.query('select 1 from equipped where github_id = $1', [id])).length).toBe(0);
-    expect((await db.query<{ revoked_at: Date | null }>('select revoked_at from inventory where id = $1', [inv!.id]))[0]!.revoked_at).not.toBeNull();
+    expect(
+      (await db.query<{ revoked_at: Date | null }>('select revoked_at from inventory where id = $1', [inv!.id]))[0]!.revoked_at,
+    ).not.toBeNull();
     expect((await db.query(`select 1 from stardust_ledger where github_id = $1 and reason = 'refund'`, [id])).length).toBe(1);
     // out of order: a delayed "paid" webhook after the refund must not re-grant
     expect(await fulfillOrder(db, 'stripe', o.session, o.id)).toBe('duplicate');
@@ -90,7 +98,10 @@ describe('F7 payments', () => {
     await claim('gifter', buyer);
     const to = await user('lucky');
     const o = await order(buyer, to, 'aura.crab_filaments');
-    await db.query(`insert into gifts (order_id, from_id, to_id, state, expires_at) values ($1, $2, $3, 'pending', now() + interval '90 days')`, [o.id, buyer, to]);
+    await db.query(
+      `insert into gifts (order_id, from_id, to_id, state, expires_at) values ($1, $2, $3, 'pending', now() + interval '90 days')`,
+      [o.id, buyer, to],
+    );
     await fulfillOrder(db, 'stripe', o.session, o.id);
     expect((await db.query<{ state: string }>('select state from gifts where order_id = $1', [o.id]))[0]!.state).toBe('pending');
     await claim('lucky', to);
@@ -99,10 +110,17 @@ describe('F7 payments', () => {
 
   it('Stripe signatures: valid accepted, forged and stale (> 5 min) rejected', () => {
     const stripe = providerByName('stripe')!;
-    const raw = JSON.stringify({ type: 'checkout.session.completed', data: { object: { id: 'cs_1', payment_status: 'paid', metadata: { order_id: 'o1' } } } });
+    const raw = JSON.stringify({
+      type: 'checkout.session.completed',
+      data: { object: { id: 'cs_1', payment_status: 'paid', metadata: { order_id: 'o1' } } },
+    });
     const sign = (t: number) => `t=${t},v1=${createHmac('sha256', 'whsec_test').update(`${t}.${raw}`).digest('hex')}`;
     const now = Math.floor(Date.now() / 1000);
-    expect(stripe.verifyWebhook(raw, new Headers({ 'stripe-signature': sign(now) }))).toEqual({ kind: 'paid', sessionId: 'cs_1', orderId: 'o1' });
+    expect(stripe.verifyWebhook(raw, new Headers({ 'stripe-signature': sign(now) }))).toEqual({
+      kind: 'paid',
+      sessionId: 'cs_1',
+      orderId: 'o1',
+    });
     expect(() => stripe.verifyWebhook(raw, new Headers({ 'stripe-signature': `t=${now},v1=deadbeef` }))).toThrow(WebhookSignatureError);
     expect(() => stripe.verifyWebhook(raw, new Headers({ 'stripe-signature': sign(now - 301) }))).toThrow(/stale/);
   });
@@ -134,7 +152,10 @@ describe('F7 Stardust', () => {
     const id = await user('dresser');
     await claim('dresser', id);
     await expect(equip(db, id, 'corona', '00000000-0000-0000-0000-000000000000')).rejects.toThrow(/don’t own/);
-    const [inv] = await db.query<{ id: string }>(`insert into inventory (owner_id, item_id, source) values ($1, 'aura.orion_veil', 'grant') returning id`, [id]);
+    const [inv] = await db.query<{ id: string }>(
+      `insert into inventory (owner_id, item_id, source) values ($1, 'aura.orion_veil', 'grant') returning id`,
+      [id],
+    );
     await expect(equip(db, id, 'corona', inv!.id)).rejects.toThrow(/aura slot/);
     await equip(db, id, 'aura', inv!.id);
   });
@@ -165,14 +186,17 @@ describe('F5/F9 claims & referrals', () => {
   it('verified referrals pay the referrer 100 ✦ once; unverified ones pay nothing', async () => {
     const ref = await user('recruiter');
     await claim('recruiter', ref);
-    const [{ referral_code }] = (await db.query<{ referral_code: string }>('select referral_code from accounts where github_id = $1', [ref])) as [
-      { referral_code: string },
-    ];
+    const [{ referral_code }] = (await db.query<{ referral_code: string }>('select referral_code from accounts where github_id = $1', [
+      ref,
+    ])) as [{ referral_code: string }];
     const good = await user('newbie', { ageDays: 400, cTotal: 50 });
     await claim('newbie', good, `${referral_code}|${Date.now() - 1000}`);
     const young = await user('sybil', { ageDays: 3, cTotal: 50 });
     await claim('sybil', young, `${referral_code}|${Date.now() - 1000}`);
-    const rows = await db.query<{ referee_id: number; verified_at: Date | null }>('select referee_id, verified_at from referrals where referrer_id = $1', [ref]);
+    const rows = await db.query<{ referee_id: number; verified_at: Date | null }>(
+      'select referee_id, verified_at from referrals where referrer_id = $1',
+      [ref],
+    );
     expect(rows.find((r) => r.referee_id === good)!.verified_at).not.toBeNull();
     expect(rows.find((r) => r.referee_id === young)!.verified_at).toBeNull();
     expect((await db.query(`select 1 from stardust_ledger where github_id = $1 and reason = 'referral'`, [ref])).length).toBe(1);

@@ -38,7 +38,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ i
       <LiveCounters initial={counters} />
       <noscript>
         <p className="mt-6 text-sm text-[var(--ink-2)]">
-          The universe needs JavaScript. You can still browse the <a href="/leaderboards">leaderboards</a> ({compact(counters.stars)} stars mapped).
+          The universe needs JavaScript. You can still browse the <a href="/leaderboards">leaderboards</a> ({compact(counters.stars)} stars
+          mapped).
         </p>
       </noscript>
     </section>

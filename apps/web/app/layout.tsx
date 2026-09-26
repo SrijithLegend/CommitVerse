@@ -2,10 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { Footer } from '@/ui/Footer';
-import { Hud } from '@/ui/Hud';
 import { Providers } from '@/ui/Providers';
 import { TopBar } from '@/ui/TopBar';
-import { UniverseLoader } from '@/ui/UniverseLoader';
+import { LazyHud, UniverseLoader } from '@/ui/UniverseLoader';
 import './globals.css';
 
 const inter = localFont({ src: '../public/fonts/InterTight.ttf', variable: '--font-inter-tight', weight: '400 700', display: 'swap' });
@@ -25,7 +24,13 @@ export const metadata: Metadata = {
   manifest: '/manifest.webmanifest',
 };
 
-export const viewport: Viewport = { themeColor: '#03040a', colorScheme: 'dark', width: 'device-width', initialScale: 1, viewportFit: 'cover' };
+export const viewport: Viewport = {
+  themeColor: '#03040a',
+  colorScheme: 'dark',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get('x-nonce') ?? undefined;
@@ -39,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers>
           <UniverseLoader tilesBase={tilesBase} />
           <TopBar />
-          <Hud />
+          <LazyHud />
           <main id="main" className="pointer-events-none relative z-10">
             {children}
           </main>

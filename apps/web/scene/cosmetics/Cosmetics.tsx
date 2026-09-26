@@ -84,7 +84,12 @@ function AuraCosmetic({ id }: { id: string }) {
   useFrame(() => {
     for (const [k, m] of mats.entries()) m.uniforms.uTime!.value = engine.time + k * 10;
   }, 0);
-  useEffect(() => () => mats.forEach((m) => m.dispose()), [mats]);
+  useEffect(
+    () => () => {
+      for (const m of mats) m.dispose();
+    },
+    [mats],
+  );
   return (
     <group userData={{ cosmetic: 'aura' }}>
       <mesh scale={22} material={mats[0]}>
@@ -145,14 +150,33 @@ function BannerSatellite({ text, radius, colorHex }: { text: string; radius: num
         <boxGeometry args={[0.5, 0.3, 0.3]} />
         <meshBasicMaterial color={new THREE.Color(0.8, 0.85, 0.95)} />
       </mesh>
-      <Text font="/fonts/InterTight.ttf" position={[0, 0.7, 0]} fontSize={0.8} color={colorHex} anchorX="center" anchorY="middle" outlineWidth={0.02} outlineColor="#03040a">
+      <Text
+        font="/fonts/InterTight.ttf"
+        position={[0, 0.7, 0]}
+        fontSize={0.8}
+        color={colorHex}
+        anchorX="center"
+        anchorY="middle"
+        outlineWidth={0.02}
+        outlineColor="#03040a"
+      >
         {text}
       </Text>
     </group>
   );
 }
 
-export function Cosmetics({ cosmetics, radius, temperature, githubId }: { cosmetics: Record<string, string | null>; radius: number; temperature: number; githubId: number }) {
+export function Cosmetics({
+  cosmetics,
+  radius,
+  temperature,
+  githubId,
+}: {
+  cosmetics: Record<string, string | null>;
+  radius: number;
+  temperature: number;
+  githubId: number;
+}) {
   const detail = useUniverse((s) => (s.focusDetail?.user.githubId === githubId ? s.focusDetail : null));
   const banner = detail?.social.bannerText;
   return (
@@ -160,7 +184,9 @@ export function Cosmetics({ cosmetics, radius, temperature, githubId }: { cosmet
       {cosmetics.corona && <CoronaCosmetic id={cosmetics.corona} radius={radius} temperature={temperature} />}
       {cosmetics.aura && <AuraCosmetic id={cosmetics.aura} />}
       {cosmetics.star_rings && <StarRingsCosmetic id={cosmetics.star_rings} radius={radius} />}
-      {cosmetics.banner && banner && <BannerSatellite text={banner} radius={radius} colorHex={String(cfg(cosmetics.banner)?.color ?? '#7cc4ff')} />}
+      {cosmetics.banner && banner && (
+        <BannerSatellite text={banner} radius={radius} colorHex={String(cfg(cosmetics.banner)?.color ?? '#7cc4ff')} />
+      )}
     </group>
   );
 }

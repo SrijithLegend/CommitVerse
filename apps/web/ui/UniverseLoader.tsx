@@ -9,6 +9,8 @@ import { useSettings } from '@/lib/client/settings';
 import { useUniverse } from '@/stores/universe';
 
 const Universe = dynamic(() => import('@/scene/Universe'), { ssr: false });
+/** The in-scene HUD (panels, dialogs, overlays) is client-only and kept out of the landing's initial JS (§12). */
+export const LazyHud = dynamic(() => import('./Hud').then((m) => m.Hud), { ssr: false });
 
 export function UniverseLoader({ tilesBase }: { tilesBase: string }) {
   const [ready, setReady] = useState(false);
@@ -19,7 +21,9 @@ export function UniverseLoader({ tilesBase }: { tilesBase: string }) {
     const on = () => setReady(true);
     window.addEventListener('cv:first-frame', on);
     // Let the poster win LCP, then start the 3D chunk.
-    const t = window.requestIdleCallback ? window.requestIdleCallback(() => setMount(true), { timeout: 600 }) : window.setTimeout(() => setMount(true), 200);
+    const t = window.requestIdleCallback
+      ? window.requestIdleCallback(() => setMount(true), { timeout: 600 })
+      : window.setTimeout(() => setMount(true), 200);
     return () => {
       window.removeEventListener('cv:first-frame', on);
       if (window.cancelIdleCallback) window.cancelIdleCallback(t as number);

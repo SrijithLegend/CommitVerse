@@ -1,5 +1,6 @@
 'use client';
 /** 52-week contribution heatmap, coloured with the star's own blackbody ramp (UTC days, oldest first). */
+import { fmt } from '@commitverse/ui-kit';
 import { kelvinToHex } from '@commitverse/universe-core';
 
 export function Heatmap({ days, temperature, cell = 5 }: { days: number[]; temperature: number; cell?: number }) {
@@ -16,7 +17,7 @@ export function Heatmap({ days, temperature, cell = 5 }: { days: number[]; tempe
       viewBox={`0 0 ${weeks * (cell + gap)} ${7 * (cell + gap)}`}
       className="mt-1.5 w-full"
       role="img"
-      aria-label={`${total.toLocaleString()} contributions in the last 52 weeks`}
+      aria-label={`${fmt(total)} contributions in the last 52 weeks`}
     >
       {days.map((v, i) => {
         const l = level(v);

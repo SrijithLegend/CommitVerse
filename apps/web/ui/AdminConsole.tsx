@@ -1,6 +1,7 @@
 'use client';
 /** F20 admin console: moderation queue, users, orders/refunds, bakes (trigger/rollback), flags & kill switches, events, drops, audit log. */
-import { Button, Tabs } from '@commitverse/ui-kit';
+import { Button } from '@commitverse/ui-kit';
+import { Tabs } from '@commitverse/ui-kit/radix';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { ApiProblem, api } from '@/lib/client/api';
@@ -19,7 +20,11 @@ const run = async (fn: () => Promise<unknown>, ok: string, after?: () => void) =
 const KILL_SWITCHES = ['comets', 'multiplayer', 'shop', 'materialize'];
 
 function Json({ data }: { data: unknown }) {
-  return <pre className="max-h-96 overflow-auto rounded bg-[rgba(160,190,255,0.05)] p-3 font-mono text-[11px] text-[var(--ink-2)] scroll-thin">{JSON.stringify(data, null, 2)}</pre>;
+  return (
+    <pre className="max-h-96 overflow-auto rounded bg-[rgba(160,190,255,0.05)] p-3 font-mono text-[11px] text-[var(--ink-2)] scroll-thin">
+      {JSON.stringify(data, null, 2)}
+    </pre>
+  );
 }
 
 function Moderation() {
@@ -36,10 +41,29 @@ function Moderation() {
               @{b.login}: <span className="font-mono text-[var(--ink-1)]">“{b.text}”</span>
             </span>
             <span className="flex gap-2">
-              <Button size="sm" onClick={() => run(() => A('moderation/banner', { method: 'POST', json: { githubId: b.github_id, decision: 'approved' } }), 'Approved', refetch)}>
+              <Button
+                size="sm"
+                onClick={() =>
+                  run(
+                    () => A('moderation/banner', { method: 'POST', json: { githubId: b.github_id, decision: 'approved' } }),
+                    'Approved',
+                    refetch,
+                  )
+                }
+              >
                 Approve
               </Button>
-              <Button size="sm" variant="danger" onClick={() => run(() => A('moderation/banner', { method: 'POST', json: { githubId: b.github_id, decision: 'rejected' } }), 'Rejected', refetch)}>
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={() =>
+                  run(
+                    () => A('moderation/banner', { method: 'POST', json: { githubId: b.github_id, decision: 'rejected' } }),
+                    'Rejected',
+                    refetch,
+                  )
+                }
+              >
                 Reject
               </Button>
             </span>
@@ -54,10 +78,17 @@ function Moderation() {
               {r.target_type} {r.target_id} — {r.reason}
             </span>
             <span className="flex gap-2">
-              <Button size="sm" onClick={() => run(() => A(`reports/${r.id}`, { method: 'POST', json: { status: 'actioned' } }), 'Actioned', refetch)}>
+              <Button
+                size="sm"
+                onClick={() => run(() => A(`reports/${r.id}`, { method: 'POST', json: { status: 'actioned' } }), 'Actioned', refetch)}
+              >
                 Actioned
               </Button>
-              <Button size="sm" variant="quiet" onClick={() => run(() => A(`reports/${r.id}`, { method: 'POST', json: { status: 'dismissed' } }), 'Dismissed', refetch)}>
+              <Button
+                size="sm"
+                variant="quiet"
+                onClick={() => run(() => A(`reports/${r.id}`, { method: 'POST', json: { status: 'dismissed' } }), 'Dismissed', refetch)}
+              >
                 Dismiss
               </Button>
             </span>
@@ -73,7 +104,8 @@ function Users() {
   const [item, setItem] = useState('');
   const [alias, setAlias] = useState('');
   const { data, refetch } = useQuery({ queryKey: ['adm-user', login], queryFn: () => A(`users/${login}`), enabled: false });
-  const act = (action: string, json?: unknown) => run(() => A(`users/${login}/${action}`, { method: 'POST', json }), `${action} done`, refetch);
+  const act = (action: string, json?: unknown) =>
+    run(() => A(`users/${login}/${action}`, { method: 'POST', json }), `${action} done`, refetch);
   return (
     <div>
       <form
@@ -83,7 +115,13 @@ function Users() {
           void refetch();
         }}
       >
-        <input value={login} onChange={(e) => setLogin(e.target.value)} placeholder="login" className="glass h-9 px-3 font-mono text-sm outline-none" aria-label="Login" />
+        <input
+          value={login}
+          onChange={(e) => setLogin(e.target.value)}
+          placeholder="login"
+          className="glass h-9 px-3 font-mono text-sm outline-none"
+          aria-label="Login"
+        />
         <Button type="submit" size="sm">
           Look up
         </Button>
@@ -101,11 +139,21 @@ function Users() {
             </Button>
           </div>
           <div className="flex gap-2">
-            <input value={item} onChange={(e) => setItem(e.target.value)} placeholder="item id to grant" className="glass h-9 px-3 font-mono text-sm outline-none" />
+            <input
+              value={item}
+              onChange={(e) => setItem(e.target.value)}
+              placeholder="item id to grant"
+              className="glass h-9 px-3 font-mono text-sm outline-none"
+            />
             <Button size="sm" onClick={() => act('grant-item', { itemId: item })}>
               Grant
             </Button>
-            <input value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="old login → redirect" className="glass h-9 px-3 font-mono text-sm outline-none" />
+            <input
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              placeholder="old login → redirect"
+              className="glass h-9 px-3 font-mono text-sm outline-none"
+            />
             <Button size="sm" onClick={() => act('alias', { oldLogin: alias })}>
               Add alias
             </Button>
@@ -119,24 +167,47 @@ function Users() {
 
 function Orders() {
   const { data, refetch } = useQuery({ queryKey: ['adm-orders'], queryFn: () => A('orders') });
-  const orders = (data?.orders as { id: string; buyer: string; recipient: string; item_id: string; status: string; amount_minor: number; currency: string; created_at: string }[]) ?? [];
+  const orders =
+    (data?.orders as {
+      id: string;
+      buyer: string;
+      recipient: string;
+      item_id: string;
+      status: string;
+      amount_minor: number;
+      currency: string;
+      created_at: string;
+    }[]) ?? [];
   return (
     <table className="w-full text-sm">
       <tbody>
         {orders.map((o) => (
           <tr key={o.id} className="border-t border-[var(--panel-border)]">
             <td className="py-2 font-mono text-xs">{o.id.slice(0, 8)}</td>
-            <td>@{o.buyer}{o.recipient !== o.buyer ? ` → @${o.recipient}` : ''}</td>
+            <td>
+              @{o.buyer}
+              {o.recipient !== o.buyer ? ` → @${o.recipient}` : ''}
+            </td>
             <td>{o.item_id}</td>
-            <td className="font-mono">{(o.amount_minor / 100).toFixed(2)} {o.currency}</td>
+            <td className="font-mono">
+              {(o.amount_minor / 100).toFixed(2)} {o.currency}
+            </td>
             <td>{o.status}</td>
             <td className="text-right">
               {o.status === 'paid' && (
                 <span className="flex justify-end gap-2">
-                  <Button size="sm" variant="danger" onClick={() => run(() => A(`orders/${o.id}/refund`, { method: 'POST' }), 'Refunded', refetch)}>
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    onClick={() => run(() => A(`orders/${o.id}/refund`, { method: 'POST' }), 'Refunded', refetch)}
+                  >
                     Refund
                   </Button>
-                  <Button size="sm" variant="quiet" onClick={() => run(() => A(`orders/${o.id}/regrant`, { method: 'POST' }), 'Re-granted', refetch)}>
+                  <Button
+                    size="sm"
+                    variant="quiet"
+                    onClick={() => run(() => A(`orders/${o.id}/regrant`, { method: 'POST' }), 'Re-granted', refetch)}
+                  >
                     Re-grant
                   </Button>
                 </span>
@@ -163,10 +234,16 @@ function Bakes() {
             <tr key={r.version} className="border-t border-[var(--panel-border)]">
               <td className="py-2 font-mono text-xs">{r.version}</td>
               <td>{r.status}</td>
-              <td className="font-mono text-xs text-[var(--ink-3)]">{r.stats ? `${r.stats.stars ?? ''} stars · ${r.stats.durationMs ?? ''} ms` : ''}</td>
+              <td className="font-mono text-xs text-[var(--ink-3)]">
+                {r.stats ? `${r.stats.stars ?? ''} stars · ${r.stats.durationMs ?? ''} ms` : ''}
+              </td>
               <td className="text-right">
                 {(r.status === 'retired' || r.status === 'validated') && (
-                  <Button size="sm" variant="quiet" onClick={() => run(() => A('bakes/rollback', { method: 'POST', json: { version: r.version } }), 'Rolled back', refetch)}>
+                  <Button
+                    size="sm"
+                    variant="quiet"
+                    onClick={() => run(() => A('bakes/rollback', { method: 'POST', json: { version: r.version } }), 'Rolled back', refetch)}
+                  >
                     Roll back to this
                   </Button>
                 )}
@@ -196,7 +273,11 @@ function FlagsAndEvents() {
           return (
             <div key={k} className="flex items-center justify-between border-t border-[var(--panel-border)] py-2 text-sm">
               <span>{k}</span>
-              <Button size="sm" variant={off ? 'primary' : 'danger'} onClick={() => run(() => A('flags', { method: 'POST', json: { key: `kill.${k}`, enabled: !off } }), 'Updated', refetch)}>
+              <Button
+                size="sm"
+                variant={off ? 'primary' : 'danger'}
+                onClick={() => run(() => A('flags', { method: 'POST', json: { key: `kill.${k}`, enabled: !off } }), 'Updated', refetch)}
+              >
                 {off ? 'Re-enable' : 'Kill'}
               </Button>
             </div>
@@ -207,14 +288,30 @@ function FlagsAndEvents() {
         <h3 className="label mb-2">Schedule a meteor shower</h3>
         <div className="flex flex-wrap gap-2">
           <input value={name} onChange={(e) => setName(e.target.value)} className="glass h-9 px-3 text-sm outline-none" aria-label="Name" />
-          <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} className="glass h-9 px-2 text-sm" aria-label="Starts" />
-          <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} className="glass h-9 px-2 text-sm" aria-label="Ends" />
+          <input
+            type="datetime-local"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            className="glass h-9 px-2 text-sm"
+            aria-label="Starts"
+          />
+          <input
+            type="datetime-local"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            className="glass h-9 px-2 text-sm"
+            aria-label="Ends"
+          />
           <Button
             size="sm"
             disabled={!start || !end}
             onClick={() =>
               run(
-                () => A('events', { method: 'POST', json: { type: 'meteor_shower', name, startsAt: new Date(start).toISOString(), endsAt: new Date(end).toISOString() } }),
+                () =>
+                  A('events', {
+                    method: 'POST',
+                    json: { type: 'meteor_shower', name, startsAt: new Date(start).toISOString(), endsAt: new Date(end).toISOString() },
+                  }),
                 'Scheduled',
                 refetchEv,
               )

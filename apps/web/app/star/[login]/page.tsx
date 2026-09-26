@@ -43,7 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: `/@${s.user.login}` },
     robots: indexable ? { index: true, follow: true } : { index: false, follow: true },
-    openGraph: { title: `@${s.user.login}'s star system · Commitverse`, description, images: [`/api/og/${s.user.login}?v=${s.bakeVersion}`] },
+    openGraph: {
+      title: `@${s.user.login}'s star system · Commitverse`,
+      description,
+      images: [`/api/og/${s.user.login}?v=${s.bakeVersion}`],
+    },
     twitter: { card: 'summary_large_image', images: [`/api/og/${s.user.login}?v=${s.bakeVersion}`] },
   };
 }

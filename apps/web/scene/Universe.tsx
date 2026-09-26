@@ -10,16 +10,17 @@ import { useEffect, useMemo, useRef } from 'react';
 import type * as THREE from 'three';
 import { Api } from '@/lib/client/api';
 import { play } from '@/lib/client/audio';
+import { engineRef } from '@/lib/client/engine-ref';
 import { subscribe } from '@/lib/client/realtime';
 import { prefersReducedMotion, useSettings } from '@/lib/client/settings';
 import { mark } from '@/lib/client/telemetry';
 import { sceneCommands, useUniverse } from '@/stores/universe';
-import { engineRef } from '@/lib/client/engine-ref';
-import { EngineContext } from './context';
+import { EngineContext, FREEZE } from './context';
 import { Engine } from './engine';
 import { Constellations } from './far/Constellations';
 import { Galaxies } from './far/Galaxies';
 import { Labels } from './far/Labels';
+import { Replay } from './far/Replay';
 import { Ships } from './multiplayer/Ships';
 import { Comets } from './near/Comets';
 import { CompareStage } from './near/CompareStage';
@@ -28,7 +29,6 @@ import { Signals } from './near/Signals';
 import { SupernovaFx } from './near/Supernova';
 import { FocusedSystem } from './near/System';
 import { detectTier } from './quality';
-import { Replay } from './far/Replay';
 
 function useFocusDetail() {
   const focus = useUniverse((s) => s.focus);
@@ -54,7 +54,7 @@ function useFocusDetail() {
       alive = false;
       off();
     };
-  }, [focus?.kind === 'star' ? focus.githubId : null, focus]);
+  }, [focus]);
 }
 
 function Root({ tilesBase }: { tilesBase: string }) {
@@ -64,13 +64,16 @@ function Root({ tilesBase }: { tilesBase: string }) {
   const setFrameloop = useThree((s) => s.setFrameloop);
   const quality = useSettings((s) => s.quality);
   const bloom = useSettings((s) => s.bloom);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the initial tier only; tier changes go through applyTier below
   const engine = useMemo(() => new Engine(gl, camera, quality === 'auto' ? 'high' : quality, tilesBase), [gl, camera, tilesBase]);
   const firstFrame = useRef(false);
   useFocusDetail();
 
   useEffect(() => {
     engineRef.current = engine;
-    if (process.env.NODE_ENV !== 'production') (window as unknown as { __cv?: Engine }).__cv = engine;
+    // test hooks (E2E cosmetic-integrity + bench); stripped from production bundles
+    if (process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_E2E === '1')
+      Object.assign(window, { __cv: engine, __cvStore: useUniverse });
     return () => {
       engineRef.current = null;
       engine.dispose();
@@ -79,9 +82,11 @@ function Root({ tilesBase }: { tilesBase: string }) {
 
   // Quality tier: detect once (auto) or honour the forced tier; forced tiers disable adaptation.
   useEffect(() => {
-    if (quality === 'auto') void detectTier().then((t) => engine.applyTier(t));
+    if (FREEZE) engine.applyTier('high');
+    else if (quality === 'auto') void detectTier().then((t) => engine.applyTier(t));
     else engine.applyTier(quality);
   }, [engine, quality]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: bloom is read by applyTier from the settings store
   useEffect(() => {
     engine.applyTier(engine.tier);
   }, [engine, bloom]);
@@ -131,7 +136,10 @@ function Root({ tilesBase }: { tilesBase: string }) {
           sceneCommands.push({ type: 'flight', on: engine.rig.mode !== 'flight' });
           break;
         case 'galaxy': {
-          const pos = s.focus?.kind === 'star' ? s.focus.position : ([engine.rig.target[0]!, engine.rig.target[1]!, engine.rig.target[2]!] as [number, number, number]);
+          const pos =
+            s.focus?.kind === 'star'
+              ? s.focus.position
+              : ([engine.rig.target[0]!, engine.rig.target[1]!, engine.rig.target[2]!] as [number, number, number]);
           const g = engine.tiles.galaxyAt(pos) ?? s.manifest?.galaxies[0];
           if (g) sceneCommands.push({ type: 'galaxyView', galaxyId: g.id });
           break;
@@ -243,7 +251,9 @@ function IntentDriver({ engine }: { engine: Engine }) {
             const d = await detail;
             const cur = useUniverse.getState().focus;
             if (cur?.kind === 'star' && cur.githubId === p.githubId) {
-              useUniverse.getState().set({ focus: { ...cur, login: d.user.login, radius: d.body.radius, temperature: d.body.temperature }, focusDetail: d });
+              useUniverse
+                .getState()
+                .set({ focus: { ...cur, login: d.user.login, radius: d.body.radius, temperature: d.body.temperature }, focusDetail: d });
               const frame = Math.max(6 * d.body.radius, (d.planets.at(-1)?.orbitRadius ?? 10) * 1.7);
               if (engine.rig.mode !== 'warp') engine.rig.distGoal = frame;
               else if (engine.rig.warp) engine.rig.warp.arrivalDist = frame;
@@ -273,7 +283,14 @@ function IntentDriver({ engine }: { engine: Engine }) {
           void Promise.all([Api.position(login), Api.star(login)])
             .then(([p, d]) => {
               useUniverse.getState().set({
-                focus: { kind: 'star', githubId: p.githubId, login: d.user.login, position: [p.x, p.y, p.z], radius: d.body.radius, temperature: d.body.temperature },
+                focus: {
+                  kind: 'star',
+                  githubId: p.githubId,
+                  login: d.user.login,
+                  position: [p.x, p.y, p.z],
+                  radius: d.body.radius,
+                  temperature: d.body.temperature,
+                },
                 focusDetail: d,
                 panel: 'system',
               });
@@ -300,7 +317,10 @@ export default function Universe({ tilesBase }: { tilesBase: string }) {
     const ok = !!c.getContext('webgl2');
     if (!ok) useUniverse.getState().set({ webgl: 'unavailable' });
     // R3F measures its container once; when mounted lazily that first measurement can be missed — nudge it.
-    const ids = [requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))), window.setTimeout(() => window.dispatchEvent(new Event('resize')), 300)];
+    const ids = [
+      requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))),
+      window.setTimeout(() => window.dispatchEvent(new Event('resize')), 300),
+    ];
     return () => {
       cancelAnimationFrame(ids[0]!);
       clearTimeout(ids[1]);
@@ -317,7 +337,14 @@ export default function Universe({ tilesBase }: { tilesBase: string }) {
       <Canvas
         flat
         dpr={1}
-        gl={{ antialias: false, alpha: false, stencil: false, depth: true, powerPreference: 'high-performance', preserveDrawingBuffer: false }}
+        gl={{
+          antialias: false,
+          alpha: false,
+          stencil: false,
+          depth: true,
+          powerPreference: 'high-performance',
+          preserveDrawingBuffer: false,
+        }}
         camera={{ fov: 60, near: 10, far: 5e6, position: [0, 0, 0] }}
         frameloop="always"
         onCreated={({ gl }) => {

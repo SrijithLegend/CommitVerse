@@ -9,9 +9,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 // @ts-expect-error troika-three-text ships no types
 import { Text } from 'troika-three-text';
-import { cachedBrief, brief } from '@/lib/client/positions';
+import { brief, cachedBrief } from '@/lib/client/positions';
 import { useSettings } from '@/lib/client/settings';
-import { type Vec3d, useUniverse } from '@/stores/universe';
+import { useUniverse, type Vec3d } from '@/stores/universe';
 import { useEngine } from '../context';
 
 const MAX = 60;

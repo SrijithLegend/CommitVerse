@@ -50,7 +50,13 @@ export function ReplayControls() {
 
   return (
     <div className="glass pointer-events-auto fixed inset-x-3 bottom-8 z-30 mx-auto flex max-w-3xl flex-wrap items-center gap-3 p-3 sm:bottom-10">
-      <Button size="sm" variant="ghost" onClick={() => setPlaying(!playing)} aria-label={playing ? 'Pause' : 'Play'} icon={playing ? <Pause size={14} /> : <Play size={14} />} />
+      <Button
+        size="sm"
+        variant="ghost"
+        onClick={() => setPlaying(!playing)}
+        aria-label={playing ? 'Pause' : 'Play'}
+        icon={playing ? <Pause size={14} /> : <Play size={14} />}
+      />
       <div className="num w-16 font-mono text-lg text-[var(--ink-1)]" aria-live="off">
         {Math.floor(year)}
       </div>
@@ -85,7 +91,9 @@ export function ReplayControls() {
       >
         Share
       </Button>
-      {prefersReducedMotion() && <p className="w-full text-[11px] text-[var(--ink-3)]">Reduced motion is on — scrub the timeline instead of playing.</p>}
+      {prefersReducedMotion() && (
+        <p className="w-full text-[11px] text-[var(--ink-3)]">Reduced motion is on — scrub the timeline instead of playing.</p>
+      )}
     </div>
   );
 }

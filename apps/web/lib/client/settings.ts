@@ -72,7 +72,8 @@ export const useSettings = create<Settings>()(
       setKey: (action, code) => set((s) => ({ keys: { ...s.keys, [action]: code } })),
       dismissHint: (id) => set((s) => ({ hintsDismissed: [...new Set([...s.hintsDismissed, id])] })),
     }),
-    { name: 'cv-settings', version: 1 },
+    // rehydrated after mount (Providers) so the first client render matches the server HTML
+    { name: 'cv-settings', version: 1, skipHydration: true },
   ),
 );
 

@@ -1,5 +1,4 @@
 'use client';
-import { AnimatePresence, motion } from 'motion/react';
 import { type ReactNode, useEffect, useState } from 'react';
 
 interface Toast {
@@ -29,26 +28,28 @@ export function Toaster() {
     };
   }, []);
   return (
-    <div className="pointer-events-none fixed bottom-4 left-1/2 z-[60] flex w-[min(92vw,420px)] -translate-x-1/2 flex-col gap-2" role="status" aria-live="polite">
-      <AnimatePresence>
-        {items.map((t) => (
-          <motion.div
-            key={t.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2, ease: [0.2, 0.8, 0.2, 1] }}
-            className={`glass pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 text-sm ${t.tone === 'error' ? 'text-[var(--danger)]' : 'text-[var(--ink-1)]'}`}
-          >
-            <span>{t.content}</span>
-            {t.action && (
-              <button type="button" onClick={t.action.onClick} className="shrink-0 rounded-md px-2 py-1 text-[var(--accent)] hover:bg-[rgba(124,196,255,0.08)]">
-                {t.action.label}
-              </button>
-            )}
-          </motion.div>
-        ))}
-      </AnimatePresence>
+    <div
+      className="pointer-events-none fixed bottom-4 left-1/2 z-[60] flex w-[min(92vw,420px)] -translate-x-1/2 flex-col gap-2"
+      role="status"
+      aria-live="polite"
+    >
+      {items.map((t) => (
+        <div
+          key={t.id}
+          className={`glass pointer-events-auto flex animate-[toastIn_200ms_var(--ease)] items-center justify-between gap-3 px-4 py-3 text-sm ${t.tone === 'error' ? 'text-[var(--danger)]' : 'text-[var(--ink-1)]'}`}
+        >
+          <span>{t.content}</span>
+          {t.action && (
+            <button
+              type="button"
+              onClick={t.action.onClick}
+              className="shrink-0 rounded-md px-2 py-1 text-[var(--accent)] hover:bg-[rgba(124,196,255,0.08)]"
+            >
+              {t.action.label}
+            </button>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

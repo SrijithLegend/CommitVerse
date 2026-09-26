@@ -1,5 +1,5 @@
-import { useFrame } from '@react-three/fiber';
 import { BANDS } from '@commitverse/universe-core';
+import { useFrame } from '@react-three/fiber';
 import { createContext, useContext, useEffect } from 'react';
 import type * as THREE from 'three';
 import type { Vec3d } from '@/stores/universe';
@@ -34,7 +34,17 @@ export function useCameraRelative(ref: React.RefObject<THREE.Object3D | null>, w
 }
 
 /** Shared scene clock: closed-form orbits use wall-clock seconds so every viewer sees the same sky (§6.9). */
-export const sceneTime = (): number => Date.now() / 1000;
+export const sceneTime = (): number => (FREEZE ? FREEZE.t : Date.now() / 1000);
+
+/**
+ * §13.1 visual regression: `?freeze=1&t=12.5` renders deterministic frames — fixed scene clock, fixed-step camera,
+ * DPR 1, forced High tier, no adaptive quality. Read once at load; the specs navigate with full page loads.
+ */
+export const FREEZE: { t: number } | null = (() => {
+  if (typeof window === 'undefined') return null;
+  const q = new URLSearchParams(window.location.search);
+  return q.get('freeze') === '1' ? { t: Number(q.get('t')) || 12.5 } : null;
+})();
 
 /** Inverse of the temperature band mapping: activity percentile a from T (for sunspot density). */
 export function activityFromTemperature(T: number): number {

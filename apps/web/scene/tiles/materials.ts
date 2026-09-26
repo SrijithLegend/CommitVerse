@@ -37,7 +37,9 @@ export function createHiddenTexture(rows = 1): THREE.DataTexture {
 }
 
 export function coronaPalette(): THREE.Color[] {
-  const colors = CATALOG.filter((i) => i.slot === 'corona').map((i) => new THREE.Color(String(i.renderConfig.color ?? '#ffffff')).multiplyScalar(0.6));
+  const colors = CATALOG.filter((i) => i.slot === 'corona').map((i) =>
+    new THREE.Color(String(i.renderConfig.color ?? '#ffffff')).multiplyScalar(0.6),
+  );
   while (colors.length < 16) colors.push(new THREE.Color(0, 0, 0));
   return colors.slice(0, 16);
 }
@@ -59,7 +61,11 @@ export function createShared(): SharedPointUniforms {
 const vertex = glsl(starPointsVertex);
 const fragment = glsl(starPointsFragment);
 
-export function createPointMaterial(shared: SharedPointUniforms, aabb: ArrayLike<number>, opts: { ignoreHidden?: boolean } = {}): THREE.ShaderMaterial {
+export function createPointMaterial(
+  shared: SharedPointUniforms,
+  aabb: ArrayLike<number>,
+  opts: { ignoreHidden?: boolean } = {},
+): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     vertexShader: vertex,
     fragmentShader: fragment,
@@ -82,7 +88,7 @@ export interface PointArrays {
   pos: Int16Array;
   props: Uint8Array;
   cosmetic: Uint16Array;
-  index: Uint32Array;
+  index: Float32Array;
   count: number;
 }
 

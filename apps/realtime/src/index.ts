@@ -25,15 +25,24 @@ const TICK_MS = 200;
 const MIN_INTERVAL_MS = 90; // ignore clients sending faster than ~10 Hz
 const IDLE_MS = 15_000;
 
-async function verify(token: string, secret: string): Promise<{ sector: string; gid: number | null; login: string | null; exp: number } | null> {
+async function verify(
+  token: string,
+  secret: string,
+): Promise<{ sector: string; gid: number | null; login: string | null; exp: number } | null> {
   const [payload, sig] = token.split('.');
   if (!payload || !sig) return null;
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
-  const sigBytes = Uint8Array.from(atob(sig.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((sig.length + 3) % 4)), (c) => c.charCodeAt(0));
-  const ok = await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(payload));
-  if (!ok) return null;
-  const data = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((payload.length + 3) % 4)));
-  return data.exp > Date.now() ? data : null;
+  const b64 = (s: string) => atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4));
+  try {
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [
+      'verify',
+    ]);
+    const sigBytes = Uint8Array.from(b64(sig), (c) => c.charCodeAt(0));
+    if (!(await crypto.subtle.verify('HMAC', key, sigBytes, new TextEncoder().encode(payload)))) return null;
+    const data = JSON.parse(b64(payload));
+    return typeof data.exp === 'number' && data.exp > Date.now() ? data : null;
+  } catch {
+    return null; // malformed base64 / JSON → reject, never 500
+  }
 }
 
 export default {

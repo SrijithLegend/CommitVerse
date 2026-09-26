@@ -34,7 +34,8 @@ export function Reticle() {
       el.style.transform = `translate(${x - size / 2}px, ${y - size / 2}px)`;
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
-      if (readout.current) readout.current.textContent = `${Math.round(dist).toLocaleString('en-US')} ly · ${spectralSubclass(f.temperature)}`;
+      if (readout.current)
+        readout.current.textContent = `${Math.round(dist).toLocaleString('en-US')} ly · ${spectralSubclass(f.temperature)}`;
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -47,7 +48,14 @@ export function Reticle() {
       className="pointer-events-none fixed left-0 top-0 z-20 animate-[reticleIn_120ms_cubic-bezier(0.2,0.8,0.2,1)] opacity-0"
       style={{ willChange: 'transform' }}
     >
-      {(['left-0 top-0 border-l border-t', 'right-0 top-0 border-r border-t', 'left-0 bottom-0 border-l border-b', 'right-0 bottom-0 border-r border-b'] as const).map((c) => (
+      {(
+        [
+          'left-0 top-0 border-l border-t',
+          'right-0 top-0 border-r border-t',
+          'left-0 bottom-0 border-l border-b',
+          'right-0 bottom-0 border-r border-b',
+        ] as const
+      ).map((c) => (
         <span key={c} className={`absolute h-3 w-3 border-[var(--accent)] ${c}`} />
       ))}
       <div ref={readout} className="num absolute left-full top-0 ml-2 whitespace-nowrap font-mono text-[11px] text-[var(--accent)]" />

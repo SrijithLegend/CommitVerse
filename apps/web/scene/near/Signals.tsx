@@ -61,11 +61,23 @@ function Beam({ beam, geometry }: { beam: SignalBeam; geometry: THREE.BufferGeom
       }),
     [cfg],
   );
-  const flareMat = useMemo(() => new THREE.SpriteMaterial({ color: new THREE.Color(2, 2.2, 2.6), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }), []);
-  useEffect(() => () => {
-    mat.dispose();
-    flareMat.dispose();
-  }, [mat, flareMat]);
+  const flareMat = useMemo(
+    () =>
+      new THREE.SpriteMaterial({
+        color: new THREE.Color(2, 2.2, 2.6),
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }),
+    [],
+  );
+  useEffect(
+    () => () => {
+      mat.dispose();
+      flareMat.dispose();
+    },
+    [mat, flareMat],
+  );
   useFrame(() => {
     const p = engine.rig.pos;
     const u = mat.uniforms;
@@ -100,7 +112,13 @@ export function Signals() {
       if (event !== 'signal') return;
       const [a, b] = await Promise.all([brief(Number(p.from)), brief(Number(p.to))]);
       if (!a || !b) return;
-      const beam: SignalBeam = { id: `${p.from}-${p.to}-${Date.now()}`, from: a.position, to: b.position, style: String(p.style ?? 'signal_style.laser'), startedAt: Date.now() };
+      const beam: SignalBeam = {
+        id: `${p.from}-${p.to}-${Date.now()}`,
+        from: a.position,
+        to: b.position,
+        style: String(p.style ?? 'signal_style.laser'),
+        startedAt: Date.now(),
+      };
       const s = useUniverse.getState();
       s.set({ signals: [...s.signals.filter((x) => Date.now() - x.startedAt < DURATION * 1.6), beam].slice(-20) });
       play('signal');

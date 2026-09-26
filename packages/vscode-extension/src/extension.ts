@@ -37,7 +37,10 @@ export function activate(ctx: vscode.ExtensionContext) {
       const r = await fetch(`${base()}/api/v1/stars/${encodeURIComponent(login)}`);
       if (!r.ok) return;
       const d = (await r.json()) as { body: { subclass: string; state: string } };
-      setBar(`$(star-full) ${d.body.subclass}`, `@${login} · ${d.body.subclass} ${d.body.state.replace('_', ' ')} — click to open your star`);
+      setBar(
+        `$(star-full) ${d.body.subclass}`,
+        `@${login} · ${d.body.subclass} ${d.body.state.replace('_', ' ')} — click to open your star`,
+      );
     } catch {}
   };
 
@@ -90,26 +93,29 @@ export function activate(ctx: vscode.ExtensionContext) {
       const open = await vscode.window.showInformationMessage(`Your Commitverse code: ${d.user_code}`, { modal: true }, 'Open browser');
       if (open) await vscode.env.openExternal(vscode.Uri.parse(d.verification_uri_complete));
       const deadline = Date.now() + d.expires_in * 1000;
-      await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Waiting for approval in the browser…', cancellable: true }, async (_p, cancel) => {
-        while (Date.now() < deadline && !cancel.isCancellationRequested) {
-          await new Promise((res) => setTimeout(res, d.interval * 1000));
-          const t = await fetch(`${base()}/api/v1/beacon/device/token`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ device_code: d.device_code }),
-          });
-          if (t.status === 428) continue;
-          if (!t.ok) break;
-          const { access_token } = (await t.json()) as { access_token: string };
-          await ctx.secrets.store(SECRET, access_token);
-          const who = await vscode.window.showInputBox({ prompt: 'Your GitHub username (for the status bar)', ignoreFocusOut: true });
-          login = who?.replace(/^@/, '').trim() || null;
-          await ctx.globalState.update('commitverse.login', login);
-          vscode.window.showInformationMessage('Commitverse Beacon connected. Your star pulses while you code.');
-          void refreshStar();
-          return;
-        }
-      });
+      await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Notification, title: 'Waiting for approval in the browser…', cancellable: true },
+        async (_p, cancel) => {
+          while (Date.now() < deadline && !cancel.isCancellationRequested) {
+            await new Promise((res) => setTimeout(res, d.interval * 1000));
+            const t = await fetch(`${base()}/api/v1/beacon/device/token`, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ device_code: d.device_code }),
+            });
+            if (t.status === 428) continue;
+            if (!t.ok) break;
+            const { access_token } = (await t.json()) as { access_token: string };
+            await ctx.secrets.store(SECRET, access_token);
+            const who = await vscode.window.showInputBox({ prompt: 'Your GitHub username (for the status bar)', ignoreFocusOut: true });
+            login = who?.replace(/^@/, '').trim() || null;
+            await ctx.globalState.update('commitverse.login', login);
+            vscode.window.showInformationMessage('Commitverse Beacon connected. Your star pulses while you code.');
+            void refreshStar();
+            return;
+          }
+        },
+      );
     }),
     vscode.commands.registerCommand('commitverse.signOut', async () => {
       await ctx.secrets.delete(SECRET);

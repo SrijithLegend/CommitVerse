@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { Text } from 'troika-three-text';
 import { api } from '@/lib/client/api';
 import { useSettings } from '@/lib/client/settings';
-import { type Vec3d, useUniverse } from '@/stores/universe';
+import { useUniverse, type Vec3d } from '@/stores/universe';
 import { useEngine } from '../context';
 
 interface ConstellationDto {
@@ -27,7 +27,8 @@ export function Constellations() {
   const org = useUniverse((s) => s.constellationOrg);
   const focus = useUniverse((s) => s.focus);
   const [data, setData] = useState<OverlayDto | null>(null);
-  const galaxyId = focus?.kind === 'galaxy' ? focus.galaxyId : focus?.kind === 'star' ? engine.tiles.galaxyAt(focus.position)?.id : undefined;
+  const galaxyId =
+    focus?.kind === 'galaxy' ? focus.galaxyId : focus?.kind === 'star' ? engine.tiles.galaxyAt(focus.position)?.id : undefined;
 
   useEffect(() => {
     if (!on && !org) {
@@ -77,8 +78,20 @@ export function Constellations() {
     binGeo.setAttribute('position', new THREE.Float32BufferAttribute(bin, 3));
     return {
       ref,
-      lines: new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: new THREE.Color(0.49, 0.77, 1.0), transparent: true, opacity: 0.45, depthWrite: false })),
-      binaries: new THREE.LineSegments(binGeo, new THREE.LineBasicMaterial({ color: new THREE.Color(2.0, 1.6, 2.4), transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })),
+      lines: new THREE.LineSegments(
+        lineGeo,
+        new THREE.LineBasicMaterial({ color: new THREE.Color(0.49, 0.77, 1.0), transparent: true, opacity: 0.45, depthWrite: false }),
+      ),
+      binaries: new THREE.LineSegments(
+        binGeo,
+        new THREE.LineBasicMaterial({
+          color: new THREE.Color(2.0, 1.6, 2.4),
+          transparent: true,
+          opacity: 0.8,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }),
+      ),
       texts,
       anchors,
     };

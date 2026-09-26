@@ -1,14 +1,5 @@
 /** Typed client for /api/v1. Errors surface as ApiProblem (RFC 9457). */
-import type {
-  FeedEvent,
-  JobDto,
-  LeaderboardRow,
-  Position,
-  SearchResult,
-  ShopItem,
-  StarBrief,
-  StarDetail,
-} from '@commitverse/contracts';
+import type { FeedEvent, JobDto, LeaderboardRow, Position, SearchResult, ShopItem, StarBrief, StarDetail } from '@commitverse/contracts';
 
 export class ApiProblem extends Error {
   constructor(
@@ -51,7 +42,8 @@ export const Api = {
     ),
   refresh: (login: string) => api<{ queued: boolean }>(`stars/${encodeURIComponent(login)}/refresh`, { method: 'POST' }),
   job: (id: string) => api<JobDto>(`jobs/${id}`),
-  universe: () => api<{ bakeVersion: string; manifestUrl: string; deltaUrl: string; deltaEtag: string | null; starCount: number }>('universe/current'),
+  universe: () =>
+    api<{ bakeVersion: string; manifestUrl: string; deltaUrl: string; deltaEtag: string | null; starCount: number }>('universe/current'),
   feed: (cursor?: number) => api<{ events: FeedEvent[]; nextCursor: number | null }>(`feed${cursor ? `?cursor=${cursor}` : ''}`),
   leaderboard: (scope: string, metric: string, cursor = 0, me?: string) =>
     api<{ rows: LeaderboardRow[]; nextCursor: number | null; total: number; meRank?: number | null }>(
@@ -69,12 +61,19 @@ export const Api = {
   signal: (to: string, message?: string) => api<{ id: number }>('signals', { method: 'POST', json: { to, message } }),
   openGift: (id: string, equip: boolean) => api<{ itemId: string }>(`gifts/${id}/open${equip ? '?equip=1' : ''}`, { method: 'POST' }),
   bind: (login: string) => api<{ id: string }>('bindings', { method: 'POST', json: { with: login } }),
-  binding: (id: string, action: 'accept' | 'decline' | 'dissolve') => api<{ ok: true }>(`bindings/${id}`, { method: 'PATCH', json: { action } }),
+  binding: (id: string, action: 'accept' | 'decline' | 'dissolve') =>
+    api<{ ok: true }>(`bindings/${id}`, { method: 'PATCH', json: { action } }),
   notifications: () => api<{ notifications: NotificationDto[]; unread: number }>('notifications'),
   readNotifications: (ids?: number[]) => api<{ ok: true }>('notifications/read', { method: 'POST', json: { ids } }),
-  shareView: (camera: { pos: [number, number, number]; quat: [number, number, number, number]; focus: string | null; tier?: string; t: number }) =>
-    api<{ id: string; url: string }>('views', { method: 'POST', json: { camera } }),
-  report: (targetType: string, targetId: string, reason: string) => api<{ id: number }>('reports', { method: 'POST', json: { targetType, targetId, reason } }),
+  shareView: (camera: {
+    pos: [number, number, number];
+    quat: [number, number, number, number];
+    focus: string | null;
+    tier?: string;
+    t: number;
+  }) => api<{ id: string; url: string }>('views', { method: 'POST', json: { camera } }),
+  report: (targetType: string, targetId: string, reason: string) =>
+    api<{ id: number }>('reports', { method: 'POST', json: { targetType, targetId, reason } }),
 };
 
 export interface NotificationDto {

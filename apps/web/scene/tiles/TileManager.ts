@@ -4,8 +4,15 @@
  */
 import { type Manifest, type ManifestGalaxy, pathFor, tilePath } from '@commitverse/universe-core';
 import * as THREE from 'three';
+import {
+  createHiddenTexture,
+  createPointGeometry,
+  createPointMaterial,
+  HIDDEN_WIDTH,
+  type PointArrays,
+  type SharedPointUniforms,
+} from './materials';
 import type { PointHit, WorkerIn } from './tile.worker';
-import { createHiddenTexture, createPointGeometry, createPointMaterial, HIDDEN_WIDTH, type PointArrays, type SharedPointUniforms } from './materials';
 
 interface NodeState {
   id: string; // `${galaxyId}/${key}`
@@ -308,7 +315,15 @@ export class TileManager {
     });
   }
 
-  async pick(cam: Float64Array, viewProj: THREE.Matrix4, width: number, height: number, x: number, y: number, dpr: number): Promise<PointHit | null> {
+  async pick(
+    cam: Float64Array,
+    viewProj: THREE.Matrix4,
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+    dpr: number,
+  ): Promise<PointHit | null> {
     const r = await this.ask<{ hit: PointHit | null }>({
       type: 'pick',
       id: ++this.reqId,

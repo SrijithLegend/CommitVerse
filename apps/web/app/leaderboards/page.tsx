@@ -6,7 +6,10 @@ import { PageShell } from '@/ui/PageShell';
 import { SceneIntent } from '@/ui/SceneIntent';
 import { ScopePicker } from '@/ui/ScopePicker';
 
-export const metadata: Metadata = { title: 'Leaderboards', description: 'The brightest, hottest and fastest-rising stars in the Commitverse.' };
+export const metadata: Metadata = {
+  title: 'Leaderboards',
+  description: 'The brightest, hottest and fastest-rising stars in the Commitverse.',
+};
 export const revalidate = 300;
 
 export default async function Leaderboards({ searchParams }: { searchParams: Promise<{ scope?: string; metric?: string }> }) {
@@ -16,7 +19,11 @@ export default async function Leaderboards({ searchParams }: { searchParams: Pro
   const initial = await leaderboard(d, scope, 'impact', 0).catch(() => ({ rows: [], nextCursor: null, total: 0 }));
   const galaxies = await d.query<{ id: number; language: string }>('select id, language from galaxies order by population desc');
   return (
-    <PageShell title="Leaderboards" kicker="Global · per galaxy · per constellation" actions={<ScopePicker scope={scope} galaxies={galaxies} />}>
+    <PageShell
+      title="Leaderboards"
+      kicker="Global · per galaxy · per constellation"
+      actions={<ScopePicker scope={scope} galaxies={galaxies} />}
+    >
       <SceneIntent intent={{ type: 'dim' }} dim />
       <section className="glass p-4 sm:p-5">
         <LeaderboardTable key={scope} scope={scope} initial={initial} />

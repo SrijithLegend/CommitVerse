@@ -3,7 +3,8 @@
  * collapse whitespace, and a small multilingual profanity + slur filter (with leetspeak folding).
  */
 
-const INVISIBLE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F­͏؜ᅟᅠ឴឵᠎​-‏‪-‮⁠-⁯ㅤ︀-️﻿ﾠ]/g;
+// biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control characters is the point
+const INVISIBLE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F­؜ᅟᅠ឴឵᠎​-‏‪-‮⁠-⁯ㅤ﻿ﾠ]|͏|[︀-️]/gu;
 
 export function normalizeText(s: string): string {
   return s.normalize('NFKC').replace(INVISIBLE, '').replace(/\s+/g, ' ').trim();

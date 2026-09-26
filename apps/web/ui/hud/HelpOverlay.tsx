@@ -1,6 +1,7 @@
 'use client';
 /** F1: every shortcut listed in the ? overlay — and remappable (stored per viewer in localStorage). */
-import { Button, Dialog, Kbd } from '@commitverse/ui-kit';
+import { Button, Kbd } from '@commitverse/ui-kit';
+import { Dialog } from '@commitverse/ui-kit/radix';
 import { useState } from 'react';
 import { DEFAULT_KEYS, type KeyAction, useSettings } from '@/lib/client/settings';
 import { useUniverse } from '@/stores/universe';
@@ -28,7 +29,14 @@ const LABELS: Record<KeyAction, string> = {
   warp: 'Warp to hovered / selected',
 };
 
-const pretty = (code: string) => code.replace(/^Key/, '').replace(/^Digit/, '').replace('Shift+Slash', '?').replace('Slash', '/').replace('ControlLeft', 'Ctrl').replace('ShiftLeft', 'Shift');
+const pretty = (code: string) =>
+  code
+    .replace(/^Key/, '')
+    .replace(/^Digit/, '')
+    .replace('Shift+Slash', '?')
+    .replace('Slash', '/')
+    .replace('ControlLeft', 'Ctrl')
+    .replace('ShiftLeft', 'Shift');
 
 export function HelpOverlay() {
   const keys = useSettings((s) => s.keys);
@@ -36,7 +44,13 @@ export function HelpOverlay() {
   const [listening, setListening] = useState<KeyAction | null>(null);
   const close = () => useUniverse.getState().set({ overlay: null });
   return (
-    <Dialog open onOpenChange={(o) => !o && close()} title="Controls" description="Click a key to remap it. Mouse: drag to orbit, right-drag or Shift-drag to pan, wheel to zoom, click to select, double-click to warp." wide>
+    <Dialog
+      open
+      onOpenChange={(o) => !o && close()}
+      title="Controls"
+      description="Click a key to remap it. Mouse: drag to orbit, right-drag or Shift-drag to pan, wheel to zoom, click to select, double-click to warp."
+      wide
+    >
       <ul className="grid gap-x-8 gap-y-1 sm:grid-cols-2">
         {(Object.keys(LABELS) as KeyAction[]).map((a) => (
           <li key={a} className="flex items-center justify-between py-1 text-sm">

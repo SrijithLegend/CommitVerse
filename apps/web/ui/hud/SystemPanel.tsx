@@ -4,7 +4,8 @@
  * cosmetics, actions (signal, gift, compare, share, refresh, bind), "Why does my star look like this?", embed snippet.
  */
 import type { StarDetail } from '@commitverse/contracts';
-import { Button, ClassChip, Dialog, fmt, Gauge, Label } from '@commitverse/ui-kit';
+import { Button, ClassChip, fmt, fmtDate, Gauge, Label } from '@commitverse/ui-kit';
+import { Dialog } from '@commitverse/ui-kit/radix';
 import { kelvinToHex, spectralSubclass } from '@commitverse/universe-core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ExternalLink, Gift, RefreshCw, Send, Share2, Swords, X } from 'lucide-react';
@@ -27,7 +28,12 @@ function WhyPanel({ d }: { d: StarDetail }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-t border-[var(--panel-border)] pt-3">
-      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center justify-between text-left text-sm text-[var(--ink-1)]">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between text-left text-sm text-[var(--ink-1)]"
+      >
         Why does this star look like this?
         <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -51,7 +57,12 @@ function SignalDialog({ d, onClose }: { d: StarDetail; onClose: () => void }) {
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()} title={`Signal @${d.user.login}`} description="A beam of light from your star to theirs. Optional message (60 chars, only they can see it).">
+    <Dialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={`Signal @${d.user.login}`}
+      description="A beam of light from your star to theirs. Optional message (60 chars, only they can see it)."
+    >
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -68,7 +79,14 @@ function SignalDialog({ d, onClose }: { d: StarDetail; onClose: () => void }) {
           }
         }}
       >
-        <input value={msg} onChange={(e) => setMsg(e.target.value.slice(0, 60))} maxLength={60} placeholder="Great work on…" className="glass h-10 w-full px-3 text-sm outline-none" aria-label="Message" />
+        <input
+          value={msg}
+          onChange={(e) => setMsg(e.target.value.slice(0, 60))}
+          maxLength={60}
+          placeholder="Great work on…"
+          className="glass h-10 w-full px-3 text-sm outline-none"
+          aria-label="Message"
+        />
         <div className="mt-1 text-right font-mono text-[11px] text-[var(--ink-3)]">{msg.length}/60</div>
         <div className="mt-3 flex justify-end">
           <Button variant="primary" disabled={busy} type="submit" icon={<Send size={14} />}>
@@ -85,7 +103,13 @@ function GiftDialog({ d, onClose }: { d: StarDetail; onClose: () => void }) {
   const [anon, setAnon] = useState(false);
   const premium = (data?.items ?? []).filter((i) => i.track === 'premium');
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()} title={`Gift @${d.user.login}`} description="A wrapped gift pod will orbit their star until they open it. Unclaimed stars hold gifts for 90 days, then auto-refund." wide>
+    <Dialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={`Gift @${d.user.login}`}
+      description="A wrapped gift pod will orbit their star until they open it. Unclaimed stars hold gifts for 90 days, then auto-refund."
+      wide
+    >
       <ul className="grid gap-2 sm:grid-cols-2">
         {premium.map((i) => (
           <li key={i.id}>
@@ -124,10 +148,14 @@ function PlanetDetail({ d, slot }: { d: StarDetail; slot: number }) {
   if (!p) return null;
   return (
     <div className="space-y-3">
-      <button type="button" className="text-xs text-[var(--ink-2)] hover:text-[var(--ink-1)]" onClick={() => {
-        sceneCommands.push({ type: 'focusPlanet', slot: null });
-        useUniverse.getState().set({ panel: 'system' });
-      }}>
+      <button
+        type="button"
+        className="text-xs text-[var(--ink-2)] hover:text-[var(--ink-1)]"
+        onClick={() => {
+          sceneCommands.push({ type: 'focusPlanet', slot: null });
+          useUniverse.getState().set({ panel: 'system' });
+        }}
+      >
         ← Back to @{d.user.login}
       </button>
       <div className="flex items-center gap-2">
@@ -136,20 +164,43 @@ function PlanetDetail({ d, slot }: { d: StarDetail; slot: number }) {
       </div>
       {p.description && <p className="text-sm text-[var(--ink-2)]">{p.description}</p>}
       <dl className="grid grid-cols-3 gap-3 font-mono text-[12px]">
-        <div><dt className="label">Stars</dt><dd className="num text-[var(--ink-1)]">{fmt(p.stars)}</dd></div>
-        <div><dt className="label">Forks</dt><dd className="num text-[var(--ink-1)]">{fmt(p.forks)}</dd></div>
-        <div><dt className="label">Releases</dt><dd className="num text-[var(--ink-1)]">{fmt(p.releases)}</dd></div>
-        <div><dt className="label">Type</dt><dd className="text-[var(--ink-1)]">{p.type.replace('_', ' ')}</dd></div>
-        <div><dt className="label">Moons</dt><dd className="text-[var(--ink-1)]">{p.moons}</dd></div>
-        <div><dt className="label">Rings</dt><dd className="text-[var(--ink-1)]">{p.ringBands}</dd></div>
+        <div>
+          <dt className="label">Stars</dt>
+          <dd className="num text-[var(--ink-1)]">{fmt(p.stars)}</dd>
+        </div>
+        <div>
+          <dt className="label">Forks</dt>
+          <dd className="num text-[var(--ink-1)]">{fmt(p.forks)}</dd>
+        </div>
+        <div>
+          <dt className="label">Releases</dt>
+          <dd className="num text-[var(--ink-1)]">{fmt(p.releases)}</dd>
+        </div>
+        <div>
+          <dt className="label">Type</dt>
+          <dd className="text-[var(--ink-1)]">{p.type.replace('_', ' ')}</dd>
+        </div>
+        <div>
+          <dt className="label">Moons</dt>
+          <dd className="text-[var(--ink-1)]">{p.moons}</dd>
+        </div>
+        <div>
+          <dt className="label">Rings</dt>
+          <dd className="text-[var(--ink-1)]">{p.ringBands}</dd>
+        </div>
       </dl>
       <div className="text-xs text-[var(--ink-3)]">
-        {p.language ?? 'Unknown language'} · last push {p.pushedAt ? new Date(p.pushedAt).toLocaleDateString() : 'never'}
+        {p.language ?? 'Unknown language'} · last push {p.pushedAt ? fmtDate(p.pushedAt) : 'never'}
         {p.isArchived ? ' · archived (frozen)' : ''}
         {p.aurora ? ' · aurora (pushed this week)' : ''}
       </div>
       {p.repoId < 4_000_000_000 ? (
-        <a href={`https://github.com/${d.user.login}/${p.name}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[var(--accent)]">
+        <a
+          href={`https://github.com/${d.user.login}/${p.name}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm text-[var(--accent)]"
+        >
           Open on GitHub <ExternalLink size={13} />
         </a>
       ) : null}
@@ -184,7 +235,13 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
       <div className="flex items-start gap-3">
         {d.user.avatarUrl && (
           // biome-ignore lint/performance/noImgElement: avatar
-          <img src={`${d.user.avatarUrl}${d.user.avatarUrl.includes('?') ? '&' : '?'}s=96`} alt="" width={48} height={48} className="h-12 w-12 rounded-[10px]" />
+          <img
+            src={`${d.user.avatarUrl}${d.user.avatarUrl.includes('?') ? '&' : '?'}s=96`}
+            alt=""
+            width={48}
+            height={48}
+            className="h-12 w-12 rounded-[10px]"
+          />
         )}
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-base font-semibold text-[var(--ink-1)]">{d.user.name ?? d.user.login}</h2>
@@ -209,9 +266,28 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
       </div>
 
       <div className="space-y-3">
-        <Gauge label="Radius · all-time" value={d.body.baseRadius - 0.6} max={5.4} display={`${fmt(d.metrics.cTotal)} contributions`} caption={`R ${fmt(d.body.radius, 2)} u`} />
-        <Gauge label="Temperature · 30 days" value={Math.log(d.body.temperature / 2400)} max={Math.log(40000 / 2400)} color={color} display={`${fmt(d.metrics.c30)} · ${fmt(d.body.temperature)} K`} caption={d.metrics.streakCurrent ? `${d.metrics.streakCurrent}-day streak` : undefined} />
-        <Gauge label="Luminosity · impact" value={d.body.luminosity} max={1.25} display={`${fmt(d.metrics.starsTotal)}★ · ${fmt(d.metrics.followers)} followers`} caption={`L ${fmt(d.body.luminosity, 2)} · impact ${fmt(d.body.impact, 2)}`} />
+        <Gauge
+          label="Radius · all-time"
+          value={d.body.baseRadius - 0.6}
+          max={5.4}
+          display={`${fmt(d.metrics.cTotal)} contributions`}
+          caption={`R ${fmt(d.body.radius, 2)} u`}
+        />
+        <Gauge
+          label="Temperature · 30 days"
+          value={Math.log(d.body.temperature / 2400)}
+          max={Math.log(40000 / 2400)}
+          color={color}
+          display={`${fmt(d.metrics.c30)} · ${fmt(d.body.temperature)} K`}
+          caption={d.metrics.streakCurrent ? `${d.metrics.streakCurrent}-day streak` : undefined}
+        />
+        <Gauge
+          label="Luminosity · impact"
+          value={d.body.luminosity}
+          max={1.25}
+          display={`${fmt(d.metrics.starsTotal)}★ · ${fmt(d.metrics.followers)} followers`}
+          caption={`L ${fmt(d.body.luminosity, 2)} · impact ${fmt(d.body.impact, 2)}`}
+        />
       </div>
 
       <div>
@@ -241,7 +317,11 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
               </li>
             ))}
           </ul>
-          {d.body.beltCount > 0 && <p className="mt-1 text-[11px] text-[var(--ink-3)]">+ {fmt(d.metrics.reposPublic - d.planets.length)} repos in the asteroid belt</p>}
+          {d.body.beltCount > 0 && (
+            <p className="mt-1 text-[11px] text-[var(--ink-3)]">
+              + {fmt(d.metrics.reposPublic - d.planets.length)} repos in the asteroid belt
+            </p>
+          )}
         </div>
       )}
 
@@ -250,7 +330,11 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
           <Label>Achievements</Label>
           <ul className="mt-1.5 flex flex-wrap gap-1.5">
             {d.achievements.slice(0, 6).map((a) => (
-              <li key={a.id} className="rounded-full border border-[var(--panel-border)] px-2 py-0.5 text-[11px] text-[var(--ink-2)]" title={`${a.tier} · ${fmt(a.rarity, 1)}% of claimed stars`}>
+              <li
+                key={a.id}
+                className="rounded-full border border-[var(--panel-border)] px-2 py-0.5 text-[11px] text-[var(--ink-2)]"
+                title={`${a.tier} · ${fmt(a.rarity, 1)}% of claimed stars`}
+              >
                 {a.name}
               </li>
             ))}
@@ -260,7 +344,14 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
 
       <div className="flex flex-wrap gap-2">
         {!mine && (
-          <Button size="sm" variant="ghost" icon={<Send size={13} />} disabled={!claimed} title={claimed ? undefined : 'Claim your star to send signals'} onClick={() => setDialog('signal')}>
+          <Button
+            size="sm"
+            variant="ghost"
+            icon={<Send size={13} />}
+            disabled={!claimed}
+            title={claimed ? undefined : 'Claim your star to send signals'}
+            onClick={() => setDialog('signal')}
+          >
             Signal · {fmt(d.social.signalsReceived)}
           </Button>
         )}
@@ -269,7 +360,12 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
             Gift
           </Button>
         )}
-        <Button size="sm" variant="ghost" icon={<Swords size={13} />} onClick={() => router.push(me?.claimed && !mine ? `/compare/${me.login}/${d.user.login}` : `/compare/${d.user.login}`)}>
+        <Button
+          size="sm"
+          variant="ghost"
+          icon={<Swords size={13} />}
+          onClick={() => router.push(me?.claimed && !mine ? `/compare/${me.login}/${d.user.login}` : `/compare/${d.user.login}`)}
+        >
           Compare
         </Button>
         <Button size="sm" variant="ghost" icon={<Share2 size={13} />} onClick={() => useUniverse.getState().set({ overlay: 'share' })}>
@@ -317,7 +413,7 @@ export function SystemBody({ d, compact = false }: { d: StarDetail; compact?: bo
         </div>
       )}
       <p className="font-mono text-[10px] text-[var(--ink-3)]">
-        {d.fetchedAt ? `Refreshed ${new Date(d.fetchedAt).toLocaleString()}` : 'Synthetic star (staging universe)'} · bake {d.bakeVersion}
+        {d.fetchedAt ? `Refreshed ${fmtDate(d.fetchedAt, true)}` : 'Synthetic star (staging universe)'} · bake {d.bakeVersion}
       </p>
 
       {dialog === 'signal' && <SignalDialog d={d} onClose={() => setDialog(null)} />}
@@ -337,7 +433,12 @@ export function SystemPanel() {
       aria-label="System panel"
       className="glass pointer-events-auto fixed inset-x-2 bottom-2 z-30 max-h-[58vh] overflow-y-auto p-4 scroll-thin sm:inset-x-auto sm:bottom-auto sm:right-3 sm:top-16 sm:max-h-[calc(100vh-5.5rem)] sm:w-[340px]"
     >
-      <button type="button" className="absolute right-2 top-2 rounded p-1 text-[var(--ink-3)] hover:text-[var(--ink-1)]" aria-label="Close panel" onClick={() => useUniverse.getState().set({ panel: null })}>
+      <button
+        type="button"
+        className="absolute right-2 top-2 rounded p-1 text-[var(--ink-3)] hover:text-[var(--ink-1)]"
+        aria-label="Close panel"
+        onClick={() => useUniverse.getState().set({ panel: null })}
+      >
         <X size={15} />
       </button>
       {panel === 'planet' && slot !== null ? <PlanetDetail d={d} slot={slot} /> : <SystemBody d={d} />}

@@ -32,7 +32,10 @@ const AXES = [
 ] as const;
 
 export default async function Compare({ params }: Props) {
-  const logins = (await params).logins.map(decodeURIComponent).filter((l) => LOGIN_RE.test(l)).slice(0, 4);
+  const logins = (await params).logins
+    .map(decodeURIComponent)
+    .filter((l) => LOGIN_RE.test(l))
+    .slice(0, 4);
   const d = await db();
   const details: StarDetail[] = [];
   for (const l of logins) {
@@ -104,7 +107,10 @@ export default async function Compare({ params }: Props) {
                     <tr key={label} className="border-t border-[var(--panel-border)]">
                       <td className="py-2 text-[var(--ink-2)]">{label}</td>
                       {vals.map((v, i) => (
-                        <td key={i} className={`num py-2 text-right font-mono ${v === best && vals.filter((x) => x === best).length === 1 ? 'text-[var(--accent)]' : 'text-[var(--ink-1)]'}`}>
+                        <td
+                          key={i}
+                          className={`num py-2 text-right font-mono ${v === best && vals.filter((x) => x === best).length === 1 ? 'text-[var(--accent)]' : 'text-[var(--ink-1)]'}`}
+                        >
                           {show(v)}
                         </td>
                       ))}
@@ -116,7 +122,10 @@ export default async function Compare({ params }: Props) {
           </section>
           <section className="glass p-4">
             <h2 className="label">Universe percentiles</h2>
-            <Radar axes={AXES.map((a) => a.label)} series={stars.map((s, i) => ({ label: `@${s.user.login}`, temperature: s.body.temperature, values: pct[i]! }))} />
+            <Radar
+              axes={AXES.map((a) => a.label)}
+              series={stars.map((s, i) => ({ label: `@${s.user.login}`, temperature: s.body.temperature, values: pct[i]! }))}
+            />
           </section>
         </div>
         <section className="glass mt-4 space-y-3 p-4">
@@ -130,7 +139,9 @@ export default async function Compare({ params }: Props) {
         </section>
         <section className="glass mt-4 p-4">
           <h2 className="label">Shared constellations</h2>
-          <p className="mt-2 text-sm text-[var(--ink-2)]">{shared.length ? shared.map((o) => `✧ ${o}`).join('  ') : 'No shared organisations.'}</p>
+          <p className="mt-2 text-sm text-[var(--ink-2)]">
+            {shared.length ? shared.map((o) => `✧ ${o}`).join('  ') : 'No shared organisations.'}
+          </p>
         </section>
       </PageShell>
     </div>

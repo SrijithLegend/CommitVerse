@@ -1,5 +1,5 @@
 /** §6.6 delta layer codec ("CVD1"): hidden star indices + per-galaxy tiles + github ids. Pure — used by the worker and the browser. */
-import { HEADER_BYTES, RECORD_BYTES, type TileRecord, encodeTile } from './tile';
+import { encodeTile, HEADER_BYTES, RECORD_BYTES, type TileRecord } from './tile';
 
 export function encodeDelta(hidden: number[], groups: { galaxyId: number; records: TileRecord[]; ids: number[] }[]): Uint8Array {
   const tiles = groups.map((g) => new Uint8Array(encodeTile(g.records)));
@@ -53,4 +53,3 @@ export function decodeDelta(buf: ArrayBuffer): {
   }
   return { hidden, groups };
 }
-

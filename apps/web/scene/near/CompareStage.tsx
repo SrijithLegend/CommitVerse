@@ -27,7 +27,13 @@ function Member({ d, offset }: { d: StarDetail; offset: () => [number, number, n
   }, 0);
   return (
     <group ref={g}>
-      <StarBody githubId={d.user.githubId} radius={d.body.radius} temperature={d.body.temperature} state={d.body.state} pulsarPeriod={d.body.pulsarPeriod} />
+      <StarBody
+        githubId={d.user.githubId}
+        radius={d.body.radius}
+        temperature={d.body.temperature}
+        state={d.body.state}
+        pulsarPeriod={d.body.pulsarPeriod}
+      />
       {d.planets.map((p) => (
         <Planet key={p.repoId} planet={p} starColor={color} segments={TIERS[tier].planetSegments} />
       ))}

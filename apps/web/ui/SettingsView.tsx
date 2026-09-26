@@ -1,6 +1,7 @@
 'use client';
 /** F18 settings: graphics, motion, audio, privacy (incl. Remove my star), profile, binary, gifts, beacon tokens, export. */
-import { Button, Dialog, fmt, Slider, Switch } from '@commitverse/ui-kit';
+import { Button, fmt, fmtDate } from '@commitverse/ui-kit';
+import { Dialog, Slider, Switch } from '@commitverse/ui-kit/radix';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -29,7 +30,11 @@ export function SettingsView() {
   const [banner, setBanner] = useState('');
   const [newToken, setNewToken] = useState<string | null>(null);
   const priv = (me?.account?.settings ?? {}) as Record<string, boolean>;
-  const { data: repos } = useQuery({ queryKey: ['my-repos'], queryFn: () => api<{ repos: { id: number; name: string; stars: number; planet_slot: number | null }[] }>('me/repos'), enabled: !!me?.claimed });
+  const { data: repos } = useQuery({
+    queryKey: ['my-repos'],
+    queryFn: () => api<{ repos: { id: number; name: string; stars: number; planet_slot: number | null }[] }>('me/repos'),
+    enabled: !!me?.claimed,
+  });
   const { data: tokens, refetch: refetchTokens } = useQuery({
     queryKey: ['beacon-tokens'],
     queryFn: () => api<{ tokens: { id: string; createdAt: string; revokedAt: string | null }[] }>('me/beacon-tokens'),
@@ -102,7 +107,9 @@ export function SettingsView() {
             </button>
           ))}
         </div>
-        <p className="mt-2 text-xs text-[var(--ink-3)]">Reduced motion disables warp streaks, camera shake and auto-rotate; warps become 400 ms crossfades.</p>
+        <p className="mt-2 text-xs text-[var(--ink-3)]">
+          Reduced motion disables warp streaks, camera shake and auto-rotate; warps become 400 ms crossfades.
+        </p>
       </Section>
 
       <Section title="Audio">
@@ -114,7 +121,9 @@ export function SettingsView() {
 
       {!me && (
         <Section title="Your star">
-          <p className="text-sm text-[var(--ink-2)]">Sign in with GitHub to claim, customize or remove your star. Removal doesn’t require claiming.</p>
+          <p className="text-sm text-[var(--ink-2)]">
+            Sign in with GitHub to claim, customize or remove your star. Removal doesn’t require claiming.
+          </p>
           <div className="mt-3 flex gap-2">
             <a href="/auth/signin?next=/settings">
               <Button variant="primary">Claim your star</Button>
@@ -131,7 +140,8 @@ export function SettingsView() {
           <Section id="checkin" title="Stardust">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm text-[var(--ink-2)]">
-                <span className="font-mono text-[var(--accent)]">✦ {fmt(me.account.stardust)}</span> · daily check-in streak {me.checkin.streak} d
+                <span className="font-mono text-[var(--accent)]">✦ {fmt(me.account.stardust)}</span> · daily check-in streak{' '}
+                {me.checkin.streak} d
               </p>
               <Button
                 variant="primary"
@@ -156,7 +166,13 @@ export function SettingsView() {
             <label className="block text-sm text-[var(--ink-1)]" htmlFor="bio">
               Bio override <span className="text-[var(--ink-3)]">({bio.length}/160)</span>
             </label>
-            <textarea id="bio" value={bio} maxLength={160} onChange={(e) => setBio(e.target.value)} className="glass mt-1 h-20 w-full p-2 text-sm outline-none" />
+            <textarea
+              id="bio"
+              value={bio}
+              maxLength={160}
+              onChange={(e) => setBio(e.target.value)}
+              className="glass mt-1 h-20 w-full p-2 text-sm outline-none"
+            />
             <div className="mt-2 flex justify-end">
               <Button size="sm" onClick={() => void patch({ bioOverride: bio || null })}>
                 Save bio
@@ -166,7 +182,14 @@ export function SettingsView() {
               Country (optional, used only for the country leaderboard)
             </label>
             <div className="mt-1 flex gap-2">
-              <input id="country" value={country} maxLength={2} onChange={(e) => setCountry(e.target.value.toUpperCase())} placeholder="IN" className="glass h-9 w-20 px-2 font-mono text-sm outline-none" />
+              <input
+                id="country"
+                value={country}
+                maxLength={2}
+                onChange={(e) => setCountry(e.target.value.toUpperCase())}
+                placeholder="IN"
+                className="glass h-9 w-20 px-2 font-mono text-sm outline-none"
+              />
               <Button size="sm" onClick={() => void patch({ country: country || null })}>
                 Save
               </Button>
@@ -206,10 +229,17 @@ export function SettingsView() {
             {me.inventory.some((i) => i.itemId === 'banner.beacon') && (
               <div className="mt-5">
                 <label className="block text-sm text-[var(--ink-1)]" htmlFor="banner">
-                  Beacon banner text (≤ 24 chars, reviewed before it appears) {me.banner && <span className="label">· {me.banner.status}</span>}
+                  Beacon banner text (≤ 24 chars, reviewed before it appears){' '}
+                  {me.banner && <span className="label">· {me.banner.status}</span>}
                 </label>
                 <div className="mt-1 flex gap-2">
-                  <input id="banner" value={banner} maxLength={24} onChange={(e) => setBanner(e.target.value)} className="glass h-9 flex-1 px-2 text-sm outline-none" />
+                  <input
+                    id="banner"
+                    value={banner}
+                    maxLength={24}
+                    onChange={(e) => setBanner(e.target.value)}
+                    className="glass h-9 flex-1 px-2 text-sm outline-none"
+                  />
                   <Button
                     size="sm"
                     onClick={async () => {
@@ -230,7 +260,9 @@ export function SettingsView() {
           </Section>
 
           <Section id="binary" title="Binary system">
-            {me.bindings.length === 0 && <p className="text-sm text-[var(--ink-2)]">No binary. Open another claimed star’s panel and choose “Form binary”.</p>}
+            {me.bindings.length === 0 && (
+              <p className="text-sm text-[var(--ink-2)]">No binary. Open another claimed star’s panel and choose “Form binary”.</p>
+            )}
             <ul className="space-y-2">
               {me.bindings.map((b) => (
                 <li key={b.id} className="flex items-center justify-between text-sm">
@@ -285,7 +317,10 @@ export function SettingsView() {
           </Section>
 
           <Section title="Beacon (VS Code)">
-            <p className="text-sm text-[var(--ink-2)]">Install the Commitverse Beacon extension and sign in with the device code, or create a token here. The extension only ever sends the language you’re editing — never file names, paths, repos or code.</p>
+            <p className="text-sm text-[var(--ink-2)]">
+              Install the Commitverse Beacon extension and sign in with the device code, or create a token here. The extension only ever
+              sends the language you’re editing — never file names, paths, repos or code.
+            </p>
             <div className="mt-3 flex gap-2">
               <Button
                 size="sm"
@@ -307,10 +342,14 @@ export function SettingsView() {
               {tokens?.tokens.map((t) => (
                 <li key={t.id} className="flex justify-between text-[var(--ink-2)]">
                   <span className="font-mono">
-                    {t.id.slice(0, 8)} · {new Date(t.createdAt).toLocaleDateString()} {t.revokedAt ? '· revoked' : ''}
+                    {t.id.slice(0, 8)} · {fmtDate(t.createdAt)} {t.revokedAt ? '· revoked' : ''}
                   </span>
                   {!t.revokedAt && (
-                    <button type="button" className="text-[var(--danger)]" onClick={() => api('me/beacon-tokens', { method: 'DELETE', json: { id: t.id } }).then(() => refetchTokens())}>
+                    <button
+                      type="button"
+                      className="text-[var(--danger)]"
+                      onClick={() => api('me/beacon-tokens', { method: 'DELETE', json: { id: t.id } }).then(() => refetchTokens())}
+                    >
                       Revoke
                     </button>
                   )}
@@ -325,11 +364,36 @@ export function SettingsView() {
         <Section title="Privacy & data">
           {me.claimed && (
             <>
-              <Switch id="hf" label="Hide me from the feed" checked={!!priv.hideFromFeed} onCheckedChange={(v) => void patch({ settings: { hideFromFeed: v } })} />
-              <Switch id="hl" label="Hide me from leaderboards" checked={!!priv.hideFromLeaderboards} onCheckedChange={(v) => void patch({ settings: { hideFromLeaderboards: v } })} />
-              <Switch id="ds" label="Disable signals" checked={!!priv.disableSignals} onCheckedChange={(v) => void patch({ settings: { disableSignals: v } })} />
-              <Switch id="hb" label="Hide my beacon" checked={!!priv.hideBeacon} onCheckedChange={(v) => void patch({ settings: { hideBeacon: v } })} />
-              <Switch id="ed" label="Weekly email digest" checked={!!priv.emailDigest} onCheckedChange={(v) => void patch({ settings: { emailDigest: v } })} />
+              <Switch
+                id="hf"
+                label="Hide me from the feed"
+                checked={!!priv.hideFromFeed}
+                onCheckedChange={(v) => void patch({ settings: { hideFromFeed: v } })}
+              />
+              <Switch
+                id="hl"
+                label="Hide me from leaderboards"
+                checked={!!priv.hideFromLeaderboards}
+                onCheckedChange={(v) => void patch({ settings: { hideFromLeaderboards: v } })}
+              />
+              <Switch
+                id="ds"
+                label="Disable signals"
+                checked={!!priv.disableSignals}
+                onCheckedChange={(v) => void patch({ settings: { disableSignals: v } })}
+              />
+              <Switch
+                id="hb"
+                label="Hide my beacon"
+                checked={!!priv.hideBeacon}
+                onCheckedChange={(v) => void patch({ settings: { hideBeacon: v } })}
+              />
+              <Switch
+                id="ed"
+                label="Weekly email digest"
+                checked={!!priv.emailDigest}
+                onCheckedChange={(v) => void patch({ settings: { emailDigest: v } })}
+              />
             </>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
@@ -346,7 +410,12 @@ export function SettingsView() {
       )}
 
       {confirmRemove && me && (
-        <Dialog open onOpenChange={(o) => !o && setConfirmRemove(false)} title="Remove your star?" description="Your star disappears within minutes. Metrics, repos, social data and inventory are deleted within 24 hours. Only a tombstone of your GitHub id remains, to stop the star re-forming.">
+        <Dialog
+          open
+          onOpenChange={(o) => !o && setConfirmRemove(false)}
+          title="Remove your star?"
+          description="Your star disappears within minutes. Metrics, repos, social data and inventory are deleted within 24 hours. Only a tombstone of your GitHub id remains, to stop the star re-forming."
+        >
           <div className="flex justify-end gap-2">
             <Button variant="quiet" onClick={() => setConfirmRemove(false)}>
               Keep my star
