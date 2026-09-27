@@ -403,7 +403,11 @@ export class Engine {
 
   // ─── Frame ────────────────────────────────────────────────────────────
 
+  /** Visual-regression hook (freeze mode only): stop simulating so consecutive frames are pixel-identical. */
+  paused = false;
+
   update(dt: number) {
+    if (FREEZE && this.paused) return;
     if (FREEZE) dt = 1 / 60; // fixed step: the camera converges in a deterministic number of frames
     const now = performance.now();
     this.time = FREEZE ? FREEZE.t : this.time + dt;

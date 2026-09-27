@@ -25,7 +25,8 @@ jobs:
           SKIP_ENV_VALIDATION: '1'
       - name: Secret-in-bundle grep (§11.1)
         run: |
-          if grep -rE "SERVICE_ROLE|service_role|sk_live_|sk_test_|TOKEN_ENC_KEY" apps/web/.next/static; then
+          # names of every server-only secret (§15), provider key prefixes and PEM headers. Any hit fails the build.
+          if grep -rlE "DATABASE_URL|SERVICE_ROLE|service_role|sk_live_|sk_test_|whsec_|TOKEN_ENC_KEY|SESSION_SECRET|GITHUB_APP_PRIVATE_KEY|PRIVATE KEY-----|GITHUB_WEBHOOK_SECRET|STRIPE_WEBHOOK_SECRET|PADDLE_API_KEY|PADDLE_WEBHOOK_SECRET|UPSTASH_REDIS_REST_TOKEN|R2_SECRET_ACCESS_KEY|REALTIME_SHARED_SECRET|RESEND_API_KEY|TURNSTILE_SECRET_KEY|SENTRY_AUTH_TOKEN" apps/web/.next/static; then
             echo "::error::Server secret referenced in a client bundle"; exit 1; fi
       - name: Bundle size check (§12)
         run: node scripts/check-bundle-size.mjs
@@ -104,7 +105,8 @@ jobs:
         if: env.HAS_FLY == 'true'
         uses: superfly/flyctl-actions/setup-flyctl@master
       - if: env.HAS_FLY == 'true'
-        run: flyctl deploy --config apps/worker/fly.toml --remote-only
+        # build context = repo root (the worker imports workspace packages); .dockerignore keeps .data/.env out
+        run: flyctl deploy . --config apps/worker/fly.toml --dockerfile apps/worker/Dockerfile --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 

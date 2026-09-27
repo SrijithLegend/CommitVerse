@@ -1,10 +1,11 @@
-/** F17 Galactic Census — universe-wide stats, refreshed monthly (page ISR 1 h). */
+/** F17 Galactic Census — universe-wide stats, refreshed monthly (aggregates cached 1 h per instance). */
 import { compact, fmt, fmtDate, Stat } from '@commitverse/ui-kit';
 import { kelvinToHex } from '@commitverse/universe-core';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { connection } from 'next/server';
 import { db } from '@/lib/server/app';
-import { census } from '@/lib/server/queries';
+import { cachedFor, census } from '@/lib/server/queries';
 import { PageShell } from '@/ui/PageShell';
 import { SceneIntent } from '@/ui/SceneIntent';
 
@@ -12,11 +13,11 @@ export const metadata: Metadata = {
   title: 'Galactic Census',
   description: 'The state of the universe: stars, classes, galaxies and events.',
 };
-export const revalidate = 3600;
 const CLASS_T: Record<string, number> = { M: 3000, K: 4400, G: 5600, F: 6700, A: 8600, B: 17000, O: 34000 };
 
 export default async function Census() {
-  const c = await census(await db());
+  await connection(); // request-time only: no DB at build (every page is dynamic via the CSP nonce anyway)
+  const c = await cachedFor('census', 3_600_000, async () => census(await db()));
   const t = c.totals ?? {};
   const classTotal = c.classes.reduce((a, b) => a + b.n, 0) || 1;
   const galTotal = c.galaxies.reduce((a, b) => a + b.population, 0) || 1;

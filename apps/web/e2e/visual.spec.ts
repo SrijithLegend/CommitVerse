@@ -6,7 +6,7 @@ import { waitForUniverse } from './helpers';
  * High tier, no adaptive quality) rendered by SwiftShader. Baselines are per-platform. Generate them on the Linux CI
  * image (`--update-snapshots`, uploaded as an artifact) and commit them. Threshold: 0.5% of pixels.
  */
-test.describe.configure({ mode: 'serial' });
+test.describe.configure({ timeout: 480_000 }); // SwiftShader renders a few fps
 
 const SHOT = { maxDiffPixelRatio: 0.005, animations: 'disabled' as const, caret: 'hide' as const };
 
@@ -18,29 +18,37 @@ test.beforeAll(async ({ request }) => {
   rows = ((await r.json()) as { rows: Row[] }).rows;
 });
 
-/** Canvas-only screenshot once the rig has settled into orbit (or a fixed frame count for wide shots). */
-async function frame(page: Page, url: string, settle: 'orbit' | number) {
+/** Canvas-only screenshot once the camera has settled: in orbit around a star, or (wide shots) any warp finished. */
+async function frame(page: Page, url: string, settle: 'orbit' | 'still') {
+  // labels off: star names come from data, not rendering
+  await page.addInitScript(() => localStorage.setItem('cv-settings', JSON.stringify({ state: { labels: false }, version: 1 })));
   await page.goto(`${url}${url.includes('?') ? '&' : '?'}freeze=1&t=12.5`);
   await waitForUniverse(page);
   await page.waitForFunction(
     (s) => {
-      const e = (window as unknown as { __cv: { frame: number; rig: { mode: string } } }).__cv;
-      return s === 'orbit' ? e.rig.mode === 'orbit' && e.frame > 30 : e.frame > s;
+      const e = (window as unknown as { __cv: { frame: number; rig: { mode: string; warpAmount: number } } }).__cv;
+      if (e.frame < 60 || e.rig.mode === 'warp' || e.rig.warpAmount > 0.001) return false;
+      return s === 'still' || e.rig.mode === 'orbit';
     },
     settle,
-    { timeout: 90_000 },
+    { timeout: 300_000 },
   );
+  // stop simulating (camera, tiles) so consecutive frames are identical; toHaveScreenshot waits for two equal captures
+  await page.evaluate(() => {
+    (window as unknown as { __cv: { paused: boolean } }).__cv.paused = true;
+  });
   // HUD and DOM overlays vary with data; the regression target is the rendered universe
+  await page.addStyleTag({ content: 'body * { visibility: hidden !important } canvas { visibility: visible !important }' });
   return page.locator('canvas').first();
 }
 
 test('supercluster hero', async ({ page }) => {
-  await expect(await frame(page, '/', 60)).toHaveScreenshot('hero.png', SHOT);
+  await expect(await frame(page, '/', 'still')).toHaveScreenshot('hero.png', SHOT);
 });
 
 test('galaxy view', async ({ page }) => {
   const g = rows[0]!.galaxy;
-  await expect(await frame(page, `/galaxy/${encodeURIComponent(g)}`, 'orbit')).toHaveScreenshot('galaxy.png', SHOT);
+  await expect(await frame(page, `/galaxy/${encodeURIComponent(g)}`, 'still')).toHaveScreenshot('galaxy.png', SHOT);
 });
 
 for (const cls of ['O', 'B', 'A', 'F', 'G', 'K', 'M']) {

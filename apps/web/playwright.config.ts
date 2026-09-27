@@ -17,7 +17,13 @@ export default defineConfig({
     baseURL: process.env.BASE_URL ?? 'http://localhost:3000',
     trace: 'retain-on-failure',
     viewport: { width: 1440, height: 900 },
-    launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] },
+    // SwiftShader (CPU WebGL) by default, identical everywhere. E2E_GPU=1 uses the local GPU instead: same tests, but not
+    // at the mercy of CPU throttling. Never set it for the visual project; its baselines are SwiftShader renders.
+    launchOptions: {
+      args: process.env.E2E_GPU
+        ? ['--enable-gpu', '--ignore-gpu-blocklist']
+        : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
+    },
   },
   projects: [
     {
@@ -25,11 +31,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], channel: process.env.CI ? undefined : 'chrome', viewport: { width: 1440, height: 900 } },
       testIgnore: /visual\.spec/,
     },
-    // §13.1 visual regression — deterministic frames; always bundled Chromium so baselines don't depend on the local Chrome
+    // §13.1 visual regression — deterministic frames. Baselines are per platform: CI's bundled Chromium writes the
+    // committed …-linux.png files; local runs use installed Chrome and write their own platform's (uncommitted) files.
     {
       name: 'visual',
       testMatch: /visual\.spec/,
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 },
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: process.env.CI ? undefined : 'chrome',
+        viewport: { width: 1280, height: 720 },
+        deviceScaleFactor: 1,
+      },
     },
     {
       name: 'mobile',

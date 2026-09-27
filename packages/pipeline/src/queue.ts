@@ -40,9 +40,18 @@ const RETRY_LIMIT = 5;
 
 // ─── pg-boss ─────────────────────────────────────────────────────────────
 
-export async function createPgBossQueue(connectionString: string): Promise<JobQueue> {
+/**
+ * `sendOnly` (the web app on serverless): no supervision, cron or schema migration, and a 2-connection pool — the worker
+ * owns maintenance, and many short-lived instances each running it would multiply DB connections and lock contention.
+ */
+export async function createPgBossQueue(connectionString: string, opts: { sendOnly?: boolean } = {}): Promise<JobQueue> {
   const { PgBoss } = await import('pg-boss');
-  const boss = new PgBoss({ connectionString, max: 10, application_name: 'commitverse-queue' });
+  const boss = new PgBoss({
+    connectionString,
+    max: opts.sendOnly ? 2 : 10,
+    application_name: opts.sendOnly ? 'commitverse-web' : 'commitverse-queue',
+    ...(opts.sendOnly ? { supervise: false, schedule: false, migrate: false, createSchema: false } : {}),
+  });
   boss.on('error', (e: unknown) => log.error({ err: e }, 'pg-boss error'));
   await boss.start();
   const created = new Set<string>();

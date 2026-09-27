@@ -48,7 +48,10 @@ export async function rateLimit(name: string, id: string, max: number, windowS: 
 }
 
 export function clientIp(req: Request): string {
+  // proxy-set headers first: the first X-Forwarded-For entry is client-controlled on hosts that append rather than
+  // overwrite it, which would let a caller rotate identities past every IP rate limit (§11.5)
+  const trusted = req.headers.get('x-real-ip') ?? req.headers.get('cf-connecting-ip');
+  if (trusted) return trusted.trim();
   const xff = req.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0]!.trim();
-  return req.headers.get('x-real-ip') ?? req.headers.get('cf-connecting-ip') ?? '127.0.0.1';
+  return xff ? xff.split(',')[0]!.trim() : '127.0.0.1';
 }

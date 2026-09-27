@@ -1,7 +1,7 @@
 /** §10 — Zod schemas shared by the API handlers and clients. */
 import { z } from 'zod';
 
-export * from './env';
+// env validation is server-only: import it from '@commitverse/contracts/env' so it can't reach client bundles
 
 export const LOGIN_RE = /^[a-zA-Z0-9-]{1,39}$/;
 export const Login = z.string().regex(LOGIN_RE, 'Invalid GitHub login');

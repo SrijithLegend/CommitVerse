@@ -3,7 +3,7 @@
  * Long-running by design — bake jobs run for minutes, which serverless functions can't host.
  */
 import { createServer } from 'node:http';
-import { parseServerEnv } from '@commitverse/contracts';
+import { parseServerEnv } from '@commitverse/contracts/env';
 import { getDb } from '@commitverse/db';
 import { createLocalQueue, createPgBossQueue, log, registerWorkers } from '@commitverse/pipeline';
 import * as Sentry from '@sentry/node';

@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { devSignIn, unclaimedLogins, waitForUniverse } from './helpers';
 
-test.describe.configure({ mode: 'serial' });
+// Multi-page flows: each navigation renders the 3D scene on the CPU (SwiftShader); the purchase flow alone takes ~60 s.
+test.describe.configure({ mode: 'serial', timeout: 180_000 });
 
 test.describe('F5 claim · F6/F7 shop & payments · F8 signal · §11.4 opt-out', () => {
   let me: string;

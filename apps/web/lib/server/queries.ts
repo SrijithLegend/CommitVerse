@@ -9,6 +9,21 @@ import { ApiError } from './errors';
 
 export const PAGE = 50;
 
+/**
+ * Per-instance TTL memo for expensive aggregates (census, achievement rarity). Pages can't use ISR because the root
+ * layout reads the per-request CSP nonce, so without this every view would rerun full-table counts.
+ * ponytail: per-instance, not shared; move to Redis if instance count makes the DB load matter.
+ */
+const memo = new Map<string, { at: number; v: Promise<unknown> }>();
+export function cachedFor<T>(key: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.v as Promise<T>;
+  const v = fn();
+  memo.set(key, { at: Date.now(), v });
+  v.catch(() => memo.delete(key)); // never cache a failure
+  return v;
+}
+
 export async function galaxyOverview(db: Sql, lang: string) {
   const [g] = await db.query<{
     id: number;

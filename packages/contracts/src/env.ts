@@ -82,7 +82,8 @@ export const PRODUCTION_REQUIRED: (keyof ServerEnv)[] = [
 export function parseServerEnv(source: Record<string, string | undefined> = process.env): ServerEnv {
   const env = ServerEnv.parse(source);
   if (env.NODE_ENV === 'production' && source.SKIP_ENV_VALIDATION !== '1') {
-    const missing = PRODUCTION_REQUIRED.filter((k) => !env[k]);
+    // read the raw source: schema defaults (APP_URL → localhost) must not satisfy a production requirement
+    const missing = PRODUCTION_REQUIRED.filter((k) => !source[k]);
     if (env.TOKEN_ENC_ACTIVE_KID && !source[`TOKEN_ENC_KEY_${env.TOKEN_ENC_ACTIVE_KID}`]) missing.push('TOKEN_ENC_ACTIVE_KID');
     if (env.PAYMENT_PROVIDER === 'mock') missing.push('PAYMENT_PROVIDER');
     if (missing.length) throw new Error(`Missing/invalid required production env: ${[...new Set(missing)].join(', ')}`);

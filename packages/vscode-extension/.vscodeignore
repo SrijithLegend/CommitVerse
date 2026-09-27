@@ -1,0 +1,7 @@
+src/**
+test/**
+.turbo/**
+node_modules/**
+tsconfig.json
+*.vsix
+.gitignore

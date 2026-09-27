@@ -17,3 +17,6 @@ test-results/
 *.vsix
 public/detect-gpu/
 .dev.vars
+# visual baselines are committed for CI's platform only (*-linux.png)
+apps/web/e2e/**/*-win32.png
+apps/web/e2e/**/*-darwin.png

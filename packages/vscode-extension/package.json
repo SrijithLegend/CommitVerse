@@ -6,6 +6,7 @@
   "publisher": "commitverse",
   "private": true,
   "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/SrijithLegend/CommitVerse.git", "directory": "packages/vscode-extension" },
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -58,7 +59,7 @@
     "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
-    "@types/vscode": "^1.138.0",
+    "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2"
   }

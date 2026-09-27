@@ -5,10 +5,14 @@
  *   pnpm migrate              apply supabase/migrations (local PGlite or DATABASE_URL)
  *   tsx src/cli.ts materialize <login>   fetch one real user (needs GITHUB_TOKEN or App creds)
  *   tsx src/cli.ts rollback <version>
+ *   tsx src/cli.ts enqueue <file>        pre-launch seeding: queue a login list (one per line) for the worker
  */
+import { readFileSync } from 'node:fs';
+import { parseServerEnv } from '@commitverse/contracts/env';
 import { getDb, migrate } from '@commitverse/db';
 import {
   buildDelta,
+  createPgBossQueue,
   fetchUser,
   ingestUser,
   log,
@@ -59,6 +63,34 @@ try {
       if (!arg) throw new Error('usage: rollback <bakeVersion>');
       await rollbackTo(db, arg);
       log.info({ version: arg }, 'rolled back');
+      break;
+    }
+    case 'enqueue': {
+      // Appendix E seeding: the running worker drains these within the GitHub budget guard (§8.4). Priority 10 sits
+      // below user-initiated lookups (100), so live users are never stuck behind the seed list.
+      const url = parseServerEnv().DATABASE_URL;
+      if (!arg || !url) throw new Error('usage: DATABASE_URL=… enqueue <file-with-one-login-per-line>');
+      const logins = [
+        ...new Set(
+          readFileSync(arg, 'utf8')
+            .split(/\s+/)
+            .map((s) => s.replace(/^@/, '')),
+        ),
+      ].filter((l) => /^[a-zA-Z0-9-]{1,39}$/.test(l));
+      const q = await createPgBossQueue(url, { sendOnly: true });
+      let queued = 0;
+      for (const login of logins) {
+        const [job] = await db.query<{ id: string }>(
+          `insert into materialize_jobs (login, priority) select $1::text, 10
+           where not exists (select 1 from github_users where login = $1::citext) on conflict do nothing returning id`,
+          [login],
+        );
+        if (!job) continue; // already mapped or already in flight
+        await q.send('materialize', { jobId: job.id, login }, { priority: 10, singletonKey: `m:${login.toLowerCase()}` });
+        queued++;
+      }
+      await q.stop();
+      log.info({ listed: logins.length, queued }, 'seed list enqueued');
       break;
     }
     default:

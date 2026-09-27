@@ -3,7 +3,7 @@
  * Local mode: embedded Postgres, an in-process worker, and an auto-seeded synthetic universe on first run.
  */
 import 'server-only';
-import { isLocalMode, parseServerEnv, type ServerEnv } from '@commitverse/contracts';
+import { isLocalMode, parseServerEnv, type ServerEnv } from '@commitverse/contracts/env';
 import { type Db, getDb } from '@commitverse/db';
 import {
   buildDelta,
@@ -35,7 +35,7 @@ async function boot(): Promise<{ db: Db; queue: JobQueue }> {
   const e = env();
   const db = await getDb();
   if (!isLocalMode(e)) {
-    const queue = await createPgBossQueue(e.DATABASE_URL!);
+    const queue = await createPgBossQueue(e.DATABASE_URL!, { sendOnly: true });
     return { db, queue };
   }
   const queue = createLocalQueue(db);

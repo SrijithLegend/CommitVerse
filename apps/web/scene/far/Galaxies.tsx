@@ -112,6 +112,11 @@ function BlackHole({ g }: { g: ManifestGalaxy }) {
   }, [engine, g, rs, disk, bulge]);
   useFrame(() => {
     disk.uniforms.uTime!.value = engine.time;
+    // The bulge is a camera-facing billboard (half-size 1.6 core radii): once the camera is inside it, it would wash the
+    // whole view in a flat glow and drown star colours. Fade it out there; the bulge's stars carry the brightness.
+    const p = engine.rig.pos;
+    const dc = Math.hypot(p[0]! - g.center[0], p[1]! - g.center[1], p[2]! - g.center[2]) / g.coreRadius;
+    bulge.opacity = THREE.MathUtils.smoothstep(dc, 1.6, 4);
   }, 0);
   const q = tiltQuat(g);
   return (

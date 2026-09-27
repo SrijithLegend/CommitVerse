@@ -1,17 +1,18 @@
 import { fmt } from '@commitverse/ui-kit';
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 import { db } from '@/lib/server/app';
-import { achievementsCatalog } from '@/lib/server/queries';
+import { achievementsCatalog, cachedFor } from '@/lib/server/queries';
 import { PageShell } from '@/ui/PageShell';
 import { SceneIntent } from '@/ui/SceneIntent';
 
 export const metadata: Metadata = { title: 'Achievements', description: 'Every Commitverse achievement, with its global rarity.' };
-export const revalidate = 3600;
 
 const TIER_COLOR: Record<string, string> = { bronze: '#c98a5a', silver: '#c4cad6', gold: '#e8c268', cosmic: '#b48cff' };
 
 export default async function Achievements() {
-  const c = await achievementsCatalog(await db());
+  await connection(); // request-time only: no DB at build (every page is dynamic via the CSP nonce anyway)
+  const c = await cachedFor('achievements', 3_600_000, async () => achievementsCatalog(await db()));
   const tiers = ['bronze', 'silver', 'gold', 'cosmic'] as const;
   return (
     <PageShell title="Achievements" kicker={`${c.achievements.length} to earn · rarity among ${fmt(c.claimedUsers)} claimed stars`} wide>

@@ -11,6 +11,7 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "poster": "node scripts/poster.mjs",
+    "bench": "node scripts/bench.mjs",
     "predev": "node scripts/copy-assets.mjs",
     "prebuild": "node scripts/copy-assets.mjs"
   },

@@ -51,6 +51,12 @@ export function route<P = Record<string, string>>(opts: RouteOptions, fn: (ctx: 
   return async (req: Request, context: { params: Promise<P> }): Promise<Response> => {
     const ip = clientIp(req);
     try {
+      // CSRF defence in depth (cookies are also SameSite=Lax): a browser-sent state change must come from our origin.
+      // Server-to-server callers (webhooks, the VS Code extension) send no Origin header and are unaffected.
+      const origin = req.headers.get('origin');
+      const host = req.headers.get('x-forwarded-host') ?? req.headers.get('host');
+      if (origin && req.method !== 'GET' && req.method !== 'HEAD' && (!URL.canParse(origin) || new URL(origin).host !== host))
+        throw new ApiError(403, 'cross_origin', 'Cross-origin request refused');
       const needsSession = opts.auth && opts.auth !== 'none';
       const session = needsSession || opts.limits?.some((l) => l.by === 'user') ? await getSession() : null;
       if (opts.auth === 'user' || opts.auth === 'claimed' || opts.auth === 'admin') {
