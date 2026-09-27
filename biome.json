@@ -12,7 +12,8 @@
       "!**/.wrangler",
       "!**/test-results",
       "!**/playwright-report",
-      "!**/public/u"
+      "!**/public/u",
+      "!**/next-env.d.ts"
     ]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 140 },
