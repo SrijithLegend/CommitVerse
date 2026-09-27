@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   D_MIN,
@@ -84,6 +85,10 @@ describe('§3.6 star placement', () => {
     expect(closePairs(sep)).toBeLessThan(closePairs(raw) * 0.5);
   });
   it('determinism snapshot: 100k synthetic users → SHA-256 of float64 positions', () => {
+    // §13.1: V8's Math.* differs across Node majors, so this golden is pinned to the runtime that bakes the universe
+    // (worker image node:22). Use .nvmrc; a different major would report a misleading hash mismatch.
+    const pinned = readFileSync(new URL('../../../.nvmrc', import.meta.url), 'utf8').trim();
+    expect(process.versions.node.split('.')[0], `run tests with Node ${pinned} (.nvmrc) — the production bake runtime`).toBe(pinned);
     const g = galaxy('Rust', 100_000);
     const out = new Float64Array(100_000 * 3);
     for (let i = 0; i < 100_000; i++) out.set(placeStar(i / 100_000, 1_000_000 + i * 7919, g), i * 3);

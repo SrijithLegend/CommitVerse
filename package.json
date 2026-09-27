@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@12.6.0",
   "engines": {
-    "node": ">=22"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "turbo run dev --filter=@commitverse/web",
@@ -11,7 +11,7 @@
     "typecheck": "turbo run typecheck",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "test": "turbo run test",
+    "test": "turbo run test --concurrency=50%",
     "seed": "pnpm --filter @commitverse/worker seed",
     "bake": "pnpm --filter @commitverse/worker bake"
   },
